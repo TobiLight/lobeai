@@ -19,6 +19,17 @@ index_router = APIRouter(responses={404: {"description": "Not Found!"}})
 def home():
     return responses.JSONResponse(status_code=status.HTTP_200_OK,
                                   content="Welcome to AI powered E-commerce")
+    
+@index_router.post("/user")
+async def protected_endpoint(token: str):
+    print(decode_token(token))
+    try:
+        user = await get_current_user(token)
+    except:
+        return {"status": "Could not validate credentials"}
+    print(user)
+    return {"message": "This is a protected endpoint", "user_id": "user_id"}
+
 
 
 @index_router.post("/get-db", summary="Get Database connection string from user")
