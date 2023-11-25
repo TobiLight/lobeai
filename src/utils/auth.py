@@ -1,5 +1,5 @@
 from typing import Union
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError, ExpiredSignatureError
@@ -115,10 +115,13 @@ def decode_token(token: str) -> Union[str, None]:
     return None
 
 
-async def decode_google_token(token: TokenRequest) -> UserProfile:
+async def decode_google_token(request: Request) -> UserProfile:
+    if not request.headers.get("Authorization"):
+        return None
+    token = request.headers.get("Authorization").split()[1]
     try:
         id_info = id_token.verify_oauth2_token(
-            token.token, google_request)
+            token, google_request)
     except exceptions.GoogleAuthError as e:
         print(e)
         if 'Token expired' in e.args[0]:
