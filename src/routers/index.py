@@ -35,7 +35,6 @@ async def protected_endpoint(token: TokenRequest):
     try:
         user = await decode_google_token(token.token)
     except:
-        # print(e)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Could not validate credentials!")
 
@@ -44,23 +43,24 @@ async def protected_endpoint(token: TokenRequest):
 
 
 @index_router.post("/get-db", summary="Get Database connection string from user")
-async def get_dbconn(conn_str: str, request: Request, user: Annotated[UserProfile, Depends(get_current_user)]):
+async def get_dbconn(conn_str: DatabaseConnection, request: Request):
     """"""
     from sqlalchemy import create_engine
     
     token = request.headers.get("Authorization").split()[1]
 
     try:
-        user = decode_google_token(token)
-        print(user)
+        user = await decode_google_token(token)
+
     except:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Could not validate credentials!")
-    # user_email = decode_token(token)
-
-    print("yusush")
-
-    parsed_url = urlparse(conn_str)
+    try:
+        parsed_url = urlparse(conn_str.uri)
+    except:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Connection string is invalid!")
+    return {}
     if parsed_url.scheme == 'postgres':
         engine = create_engine("postgresql+psycopg2://{}:{}@{}/{}".format(
             parsed_url.username, parsed_url.password, parsed_url.hostname, parsed_url.path[1:]))
@@ -75,13 +75,14 @@ async def get_dbconn(conn_str: str, request: Request, user: Annotated[UserProfil
     except OperationalError as e:
         print(f"Error connecting to the database: {e}")
 
-    conn_params = {
-        "username": parsed_url.username,
-        "password": parsed_url.password,
-        "host": parsed_url.hostname,
-        "database": parsed_url.path[1:],
-        "scheme": parsed_url.scheme
-    }
+    # conn_params = {
+    #     "username": parsed_url.username,
+    #     "password": parsed_url.password,
+    #     "host": parsed_url.hostname,
+    #     "database": parsed_url.path[1:],
+    #     "scheme": parsed_url.scheme
+    # }
+
 
 
 

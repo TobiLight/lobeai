@@ -7,6 +7,7 @@ from schemas.token import TokenPayload, TokenRequest
 from src.db import db
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from google.auth import exceptions
 from uuid import uuid4
 from prisma import errors
 
@@ -114,8 +115,14 @@ def decode_token(token: str) -> Union[str, None]:
 
 
 async def decode_google_token(token: str):
-    id_info = id_token.verify_oauth2_token(
-        token, google_request)
+    try:
+        id_info = id_token.verify_oauth2_token(
+            token, google_request)
+    except exceptions.GoogleAuthError as e:
+        if 'Token expired' in e.args[0]:
+            print("token expired")
+            return None
+        return None
 
     if id_info["iss"] == "https://accounts.google.com":
         try:

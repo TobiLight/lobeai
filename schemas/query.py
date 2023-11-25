@@ -13,6 +13,7 @@ class QueryResponse(BaseModel):
 class DatabaseType(str, Enum):
     PostgreSQL = "postgresql"
     MySQL = "mysql"
+    MongoDB = "mongodb"
     
 class DatabaseConnection(BaseModel):
     database_type: DatabaseType = Field(default=DatabaseType.PostgreSQL)
