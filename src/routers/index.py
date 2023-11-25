@@ -39,14 +39,8 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
     """"""
     from sqlalchemy import create_engine
 
-    # token = request.headers.get("Authorization").split()[1]
-
-    # try:
-    #     user = await decode_google_token(token)
-    # except Exception as e:
-    #     return responses.JSONResponse({"details": "{}".format(e)}, status_code=status.HTTP_400_BAD_REQUEST)
-
     parsed_url = urlparse(db_conn.uri)
+    print()
 
     if not parsed_url.hostname or not parsed_url.path[1:] or parsed_url.path[1:] == '':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
