@@ -41,8 +41,7 @@ async def protected_endpoint(token: TokenRequest):
     return {"message": "This is a protected endpoint", "user": user}
 
 
-
-@index_router.post("/get-db", summary="Get Database connection string from user")
+@index_router.post("/create-db", summary="Create a Database connection from user")
 async def get_dbconn(conn_str: DatabaseConnection, request: Request):
     """"""
     from sqlalchemy import create_engine
@@ -51,16 +50,13 @@ async def get_dbconn(conn_str: DatabaseConnection, request: Request):
 
     try:
         user = await decode_google_token(token)
-
     except:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Could not validate credentials!")
-    try:
-        parsed_url = urlparse(conn_str.uri)
-    except:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="Connection string is invalid!")
-    print(parsed_url)
+    parsed_url = urlparse(conn_str.uri)
+    if parsed_url[0] == '' or parsed_url[1] == '' or parsed_url[2] == '' or parsed_url[3] == '' or parsed_url[4] == '' or parsed_url[5] == '':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Invalid connection uri")
     return {}
     if parsed_url.scheme == 'postgres':
         engine = create_engine("postgresql+psycopg2://{}:{}@{}/{}".format(
