@@ -1,7 +1,7 @@
 // database
 datasource db {
     provider = "postgresql"
-    url      = "postgresql://postgres:admin123.@localhost:5432/labeai_local"
+    url      = "postgresql://postgres:EdE46bac2f6bc215da6F5E61EBfe1-fF@postgres.railway.internal:5432/railway"
 }
 
 // generator

@@ -5,6 +5,7 @@ from sqlite3 import OperationalError
 from typing_extensions import Annotated
 from fastapi import APIRouter, Depends, Request, responses
 from fastapi import status, responses
+from schemas.token import TokenRequest
 from schemas.user import UserProfile
 from src.dependencies import get_current_user
 from schemas.query import DatabaseConnection, QueryDB, QueryResponse
@@ -21,14 +22,14 @@ def home():
                                   content="Welcome to AI powered E-commerce")
     
 @index_router.post("/user")
-async def protected_endpoint(token: str):
+async def protected_endpoint(token: TokenRequest):
     print(decode_token(token))
     try:
         user = await get_current_user(token)
     except:
         return {"status": "Could not validate credentials"}
     print(user)
-    return {"message": "This is a protected endpoint", "user_id": "user_id"}
+    return {"message": "This is a protected endpoint", "user": "user"}
 
 
 

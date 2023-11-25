@@ -13,3 +13,6 @@ class TokenResponse(BaseModel):
     """
     access_token: str
     token_type: str
+
+class TokenRequest(BaseModel):
+    token: Union[str, None] = None
