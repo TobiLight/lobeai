@@ -60,6 +60,7 @@ async def get_dbconn(conn_str: DatabaseConnection, request: Request):
     except:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Connection string is invalid!")
+    print(parsed_url)
     return {}
     if parsed_url.scheme == 'postgres':
         engine = create_engine("postgresql+psycopg2://{}:{}@{}/{}".format(
