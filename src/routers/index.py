@@ -31,12 +31,6 @@ def home():
 
 @index_router.post("/authenticate")
 def protected_endpoint(user: Annotated[UserProfile, Depends(custom_auth)]):
-    # try:
-    #     user = await decode_google_token(token.token)
-    # except:
-    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-    #                         detail="Could not validate credentials!")
-
     return {"message": "This is a protected endpoint", "user": user}
 
 
