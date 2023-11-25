@@ -1,7 +1,7 @@
 // database
 datasource db {
     provider = "postgresql"
-    url      = "postgresql://postgres:admin123.@localhost:5432/labeai"
+    url      = "postgresql://postgres:admin123.@localhost:5432/labeai_local"
 }
 
 // generator

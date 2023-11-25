@@ -23,8 +23,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserDetails:
         HTTPException: If the provided token is invalid or if the user
         cannot be authenticated.
     """
-    user_id = decode_token(token)
-    user = await UserDetails.prisma().find_unique(where={"id": user_id})
+    user_email = decode_token(token)
+    user = await UserDetails.prisma().find_unique(where={"email": user_email})
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

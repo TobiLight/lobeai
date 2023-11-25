@@ -1,4 +1,5 @@
 import os
+from typing_extensions import Annotated
 from fastapi import APIRouter, Depends, Header, Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2AuthorizationCodeBearer
 from pydantic import Field
@@ -7,6 +8,10 @@ from jose import jwt
 from google.auth import credentials, compute_engine, default
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from schemas.user import UserProfile
+from src.dependencies import get_current_user
+
+from src.utils.auth import decode_token
 
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./e-commerce-ai-405922-258834ec77fc.json"
@@ -52,13 +57,7 @@ async def auth_google(code: str):
 
 @google_router.get("/protected")
 async def protected_endpoint(token: str):
-    print(token)
-    # credentials, project = default()
-    idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-    print(idinfo)
-    # Extract the token directly from the request parameters
-    # decoded_token = jwt.decode(token, GOOGLE_CLIENT_SECRET, algorithms=["HS256"])
-    # print("decoded token", decoded_token)
-    # # You can now use the information from the decoded token
-    # user_id = decoded_token.get("sub")
+    user_email = decode_token(token)
+    user = await get_current_user(token)
+    print(user)
     return {"message": "This is a protected endpoint", "user_id": "user_id"}
