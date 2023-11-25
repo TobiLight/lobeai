@@ -35,16 +35,16 @@ def protected_endpoint(user: Annotated[UserProfile, Depends(custom_auth)]):
 
 
 @index_router.post("/create-db", summary="Create a Database connection from user")
-async def create_dbconn(db_conn: DatabaseConnection, request: Request, user: UserProfile = Depends(custom_auth)):
+async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends(custom_auth)):
     """"""
     from sqlalchemy import create_engine
 
-    token = request.headers.get("Authorization").split()[1]
+    # token = request.headers.get("Authorization").split()[1]
 
-    try:
-        user = await decode_google_token(token)
-    except Exception as e:
-        return responses.JSONResponse({"details": "{}".format(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+    # try:
+    #     user = await decode_google_token(token)
+    # except Exception as e:
+    #     return responses.JSONResponse({"details": "{}".format(e)}, status_code=status.HTTP_400_BAD_REQUEST)
 
     parsed_url = urlparse(db_conn.uri)
 
@@ -89,7 +89,7 @@ async def create_dbconn(db_conn: DatabaseConnection, request: Request, user: Use
 
 
 @index_router.get("/get-db", summary="Get Database Connection URI")
-async def get_dbconn(request: Request, user: UserProfile = Depends(custom_auth)):
+async def get_dbconn(user: UserProfile = Depends(custom_auth)):
     """"""
     # token = request.headers.get("Authorization").split()[1]
     # try:
