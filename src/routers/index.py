@@ -3,14 +3,22 @@
 
 from sqlite3 import OperationalError
 from typing_extensions import Annotated
-from fastapi import APIRouter, Depends, Request, responses
+from fastapi import APIRouter, Depends, HTTPException, Request, responses
 from fastapi import status, responses
 from schemas.token import TokenRequest
 from schemas.user import UserProfile
 from src.dependencies import get_current_user
 from schemas.query import DatabaseConnection, QueryDB, QueryResponse
-from src.utils.auth import decode_token
+from src.utils.auth import decode_google_token, decode_token
 from urllib.parse import urlparse
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from src.db import db
+from uuid import uuid4
+from prisma import errors
+
+google_request = requests.Request()
+
 
 
 index_router = APIRouter(responses={404: {"description": "Not Found!"}})
@@ -21,15 +29,17 @@ def home():
     return responses.JSONResponse(status_code=status.HTTP_200_OK,
                                   content="Welcome to AI powered E-commerce")
     
-@index_router.post("/user")
+
+@index_router.post("/authenticate")
 async def protected_endpoint(token: TokenRequest):
-    print(decode_token(token))
     try:
-        user = await get_current_user(token)
+        user = await decode_google_token(token.token)
     except:
-        return {"status": "Could not validate credentials"}
-    print(user)
-    return {"message": "This is a protected endpoint", "user": "user"}
+        # print(e)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Could not validate credentials!")
+
+    return {"message": "This is a protected endpoint", "user": user}
 
 
 
@@ -39,7 +49,16 @@ async def get_dbconn(conn_str: str, request: Request, user: Annotated[UserProfil
     from sqlalchemy import create_engine
     
     token = request.headers.get("Authorization").split()[1]
-    user_email = decode_token(token)
+
+    try:
+        user = decode_google_token(token)
+        print(user)
+    except:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Could not validate credentials!")
+    # user_email = decode_token(token)
+
+    print("yusush")
 
     parsed_url = urlparse(conn_str)
     if parsed_url.scheme == 'postgres':

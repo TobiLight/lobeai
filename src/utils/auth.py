@@ -3,8 +3,15 @@ from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError, ExpiredSignatureError
-from schemas.token import TokenPayload
+from schemas.token import TokenPayload, TokenRequest
 from src.db import db
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from uuid import uuid4
+from prisma import errors
+
+
+google_request = requests.Request()
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 30 minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
@@ -95,7 +102,7 @@ def decode_token(token: str) -> Union[str, None]:
         #         detail="Token expired",
         #         headers={"WWW-Authenticate": "Bearer"},
         #     )
-    except (JWTError, ExpiredSignatureError):
+    except (JWTError, ExpiredSignatureError) as e:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
@@ -103,4 +110,27 @@ def decode_token(token: str) -> Union[str, None]:
         )
     if token_data.email:
         return token_data.email
+    return None
+
+
+async def decode_google_token(token: str):
+    id_info = id_token.verify_oauth2_token(
+        token, google_request)
+
+    if id_info["iss"] == "https://accounts.google.com":
+        try:
+            existing_user = await db.user.find_first(where={"email": id_info["email"]})
+            if existing_user:
+                return existing_user
+            else:
+                new_user = await db.user.create({
+                    "id": str(uuid4()),
+                    "email": id_info["email"],
+                    "name": id_info["name"]
+                })
+            return new_user
+        except errors.PrismaError as e:
+            print(e)
+            print("An error has occured while creating an account!")
+
     return None
