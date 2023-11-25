@@ -117,10 +117,3 @@ async def query_database(q: QueryDB, db: DatabaseConnection,
     # return responses.JSONResponse(content={"query": q.query,
     #                                        "response": response})
 
-
-# @index_router.post("/get-connection-string", summary="Get DB connection string from a User")
-# async def get_connection_string(connection_str: str):
-#     """"""
-#     # get connection string from user and save it in the database
-
-#     return {}
