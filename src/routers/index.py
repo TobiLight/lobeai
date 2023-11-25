@@ -84,8 +84,6 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
         client_mongo.close()
         return {"status": "OK"}
 
-
-
     try:
         engine.connect().close()
         print("Database is connected.")
