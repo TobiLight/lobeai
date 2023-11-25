@@ -89,14 +89,13 @@ async def create_dbconn(db_conn: DatabaseConnection, request: Request, user: Use
 
 
 @index_router.get("/get-db", summary="Get Database Connection URI")
-async def get_dbconn(request: Request):
+async def get_dbconn(request: Request, user: UserProfile = Depends(custom_auth)):
     """"""
-    token = request.headers.get("Authorization").split()[1]
-
-    try:
-        user = await decode_google_token(token)
-    except Exception as e:
-        return responses.JSONResponse({"details": "{}".format(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+    # token = request.headers.get("Authorization").split()[1]
+    # try:
+    #     user = await decode_google_token(token)
+    # except Exception as e:
+    #     return responses.JSONResponse({"details": "{}".format(e)}, status_code=status.HTTP_400_BAD_REQUEST)
 
     try:
         exisitng_conn = await db.databaseconnection.find_many(where={"user_id": user.id})
