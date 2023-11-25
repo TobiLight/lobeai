@@ -40,7 +40,6 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
     from sqlalchemy import create_engine
 
     parsed_url = urlparse(db_conn.uri)
-    print()
 
     if not parsed_url.hostname or not parsed_url.path[1:] or parsed_url.path[1:] == '':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -56,7 +55,36 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
                                                     parsed_url.port, parsed_url.path[1:]), echo=True)
     else:
         # handle mongodb connection here
-        pass
+        from pymongo.mongo_client import MongoClient
+        from os import getenv
+        MONGO_URI = getenv("MONGO_URI")
+
+        client_mongo = MongoClient(
+            MONGO_URI if MONGO_URI else "mongodb+srv://0xTobi:EdmtTjWvlPNa2vnl@cluster0.ogakrxv.mongodb.net/?retryWrites=true&w=majority")
+        if not client_mongo.is_mongos:
+            print("Connected to a standalone MongoDB server")
+
+        # Check if connected to a primary node in a replica set
+        if client_mongo.is_primary:
+            print("Connected to the primary node in a replica set")
+
+        existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
+        if existing_conn:
+            return {"status": "Database connection exists already!"}
+        await db.databaseconnection.create({
+            "id": str(uuid4()),
+            "user_id": user.id,
+            "uri": parsed_url.geturl(),
+            "port": str(parsed_url.port),
+            "host": parsed_url.path[1:],
+            "username": parsed_url.username,
+            "password": parsed_url.password,
+            "type": db_conn.database_type
+        })
+        client_mongo.close()
+        return {"status": "OK"}
+
+
 
     try:
         engine.connect().close()
@@ -67,7 +95,7 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
         await db.databaseconnection.create({
             "id": str(uuid4()),
             "user_id": user.id,
-            "uri": db_conn.uri,
+            "uri": parsed_url.geturl(),
             "port": str(parsed_url.port),
             "host": parsed_url.path[1:],
             "username": parsed_url.username,
@@ -85,18 +113,13 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
 @index_router.get("/get-db", summary="Get Database Connection URI")
 async def get_dbconn(user: UserProfile = Depends(custom_auth)):
     """"""
-    # token = request.headers.get("Authorization").split()[1]
-    # try:
-    #     user = await decode_google_token(token)
-    # except Exception as e:
-    #     return responses.JSONResponse({"details": "{}".format(e)}, status_code=status.HTTP_400_BAD_REQUEST)
-
     try:
-        exisitng_conn = await db.databaseconnection.find_many(where={"user_id": user.id})
-        print(exisitng_conn)
+        existing_conn = await db.databaseconnection.find_many(where={"user_id": user.id})
     except (errors.PrismaError) as e:
         print(e)
-        return
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))
+    return {"databases": [*existing_conn]}
 
 
 @index_router.post('/query', summary="Query Database with NL")
