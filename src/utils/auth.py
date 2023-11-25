@@ -120,9 +120,8 @@ async def decode_google_token(token: str):
             token, google_request)
     except exceptions.GoogleAuthError as e:
         if 'Token expired' in e.args[0]:
-            print("token expired")
-            return None
-        return None
+            raise Exception("Token has expired!")
+        raise (None)
 
     if id_info["iss"] == "https://accounts.google.com":
         try:

@@ -3,7 +3,7 @@
 
 from sqlite3 import OperationalError
 from typing_extensions import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Request, responses
+from fastapi import APIRouter, Depends, HTTPException, Request, responses, Response
 from fastapi import status, responses
 from schemas.token import TokenRequest
 from schemas.user import UserProfile
@@ -20,7 +20,6 @@ from prisma import errors
 google_request = requests.Request()
 
 
-
 index_router = APIRouter(responses={404: {"description": "Not Found!"}})
 
 
@@ -28,7 +27,7 @@ index_router = APIRouter(responses={404: {"description": "Not Found!"}})
 def home():
     return responses.JSONResponse(status_code=status.HTTP_200_OK,
                                   content="Welcome to AI powered E-commerce")
-    
+
 
 @index_router.post("/authenticate")
 async def protected_endpoint(token: TokenRequest):
@@ -42,67 +41,75 @@ async def protected_endpoint(token: TokenRequest):
 
 
 @index_router.post("/create-db", summary="Create a Database connection from user")
-async def get_dbconn(conn_str: DatabaseConnection, request: Request):
+async def create_dbconn(db_conn: DatabaseConnection, request: Request):
     """"""
     from sqlalchemy import create_engine
-    
+
     token = request.headers.get("Authorization").split()[1]
 
     try:
         user = await decode_google_token(token)
-    except:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Could not validate credentials!")
-    parsed_url = urlparse(conn_str.uri)
-    if parsed_url[0] == '' or parsed_url[1] == '' or parsed_url[2] == '' or parsed_url[3] == '' or parsed_url[4] == '' or parsed_url[5] == '':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Invalid connection uri")
-    return {}
-    if parsed_url.scheme == 'postgres':
-        engine = create_engine("postgresql+psycopg2://{}:{}@{}/{}".format(
-            parsed_url.username, parsed_url.password, parsed_url.hostname, parsed_url.path[1:]))
-    else:
+    except Exception as e:
+        return responses.JSONResponse({"details": "{}".format(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+
+    parsed_url = urlparse(db_conn.uri)
+
+    if not parsed_url.hostname or not parsed_url.path[1:] or parsed_url.path[1:] == '':
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Invalid Database URI")
+
+    if db_conn.database_type == 'postgresql':
         engine = create_engine(
-            "postgres://lobeai:ZDc2nqiieHWRMszmfgtZVLiyDiVjDNsE@dpg-clghs9ef27hc739kni5g-a.oregon-postgres.render.com/lobeai", echo=True)
+            "postgresql+psycopg2://{}:{}@{}:{}/{}".format(parsed_url.username, parsed_url.password, parsed_url.hostname,
+                                                          parsed_url.port, parsed_url.path[1:]))
+    elif db_conn.database_type == 'mysql':
+        engine = create_engine(
+            "mysql+mysqldb://{}:{}@{}:{}/{}".format(parsed_url.username, parsed_url.password, parsed_url.hostname,
+                                                    parsed_url.port, parsed_url.path[1:]), echo=True)
+    else:
+        # handle mongodb connection here
+        pass
 
     try:
-        # Check if the database connection is alive
         engine.connect().close()
         print("Database is connected.")
-    except OperationalError as e:
-        print(f"Error connecting to the database: {e}")
+        existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
+        if existing_conn:
+            return {"status": "Database connection exists already!"}
+        await db.databaseconnection.create({
+            "id": str(uuid4()),
+            "user_id": user.id,
+            "uri": db_conn.uri,
+            "port": str(parsed_url.port),
+            "host": parsed_url.path[1:],
+            "username": parsed_url.username,
+            "password": parsed_url.password,
+            "type": db_conn.database_type
+        })
+    except (errors.PrismaError, OperationalError) as e:
+        print(f"Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))
 
-    # conn_params = {
-    #     "username": parsed_url.username,
-    #     "password": parsed_url.password,
-    #     "host": parsed_url.hostname,
-    #     "database": parsed_url.path[1:],
-    #     "scheme": parsed_url.scheme
-    # }
-
-
-
-
-    # try:
-    #     await db_conn.connect()
-    #     print("User's Database Connected!")
-    #     await db_conn.disconnect()
-    # except:
-    #     # print("An error has occured")
-    #     return {"status": "An error has occured while trying to connect to your database. Please check the connection string and try again"}
-    # await client.databaseconnection.create({
-    #     "user_id": user_id,
-    #     "id": str(uuid4()),
-    #     "host": conn_params['host'],
-    #     "username": conn_params["username"],
-    #     "password": conn_params["password"],
-    #     "uri": db_conn,
-    #     "port": "5432",
-    #     "type": conn_params["scheme"],
-    #     "created_at": datetime.now(),
-    #     "updated_at": datetime.now()
-    # })
     return {"status": "OK"}
+
+
+@index_router.get("/get-db", summary="Get Database Connection URI")
+async def get_dbconn(request: Request):
+    """"""
+    token = request.headers.get("Authorization").split()[1]
+
+    try:
+        user = await decode_google_token(token)
+    except Exception as e:
+        return responses.JSONResponse({"details": "{}".format(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        exisitng_conn = await db.databaseconnection.find_many(where={"user_id": user.id})
+        print(exisitng_conn)
+    except (errors.PrismaError) as e:
+        print(e)
+        return
 
 
 @index_router.post('/query', summary="Query Database with NL")
@@ -134,4 +141,3 @@ async def query_database(q: QueryDB, db: DatabaseConnection,
     # response = query_response_to_nl(q.query, sql_result)
     # return responses.JSONResponse(content={"query": q.query,
     #                                        "response": response})
-

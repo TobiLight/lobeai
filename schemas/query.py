@@ -18,9 +18,9 @@ class DatabaseType(str, Enum):
 class DatabaseConnection(BaseModel):
     database_type: DatabaseType = Field(default=DatabaseType.PostgreSQL)
     uri: Union[str, None] = Field(default=None)
-    username: Union[str, None] = Field(default=None)
-    password: Union[str, None] = Field(default=None)
-    host: Union[str, None] = Field(default=None)
-    port: Union[str, None] = Field(default=None)
+    # username: Union[str, None] = Field(default=None)
+    # password: Union[str, None] = Field(default=None)
+    # host: Union[str, None] = Field(default=None)
+    # port: Union[str, None] = Field(default=None)
 
 
