@@ -3,7 +3,6 @@
 from fastapi import FastAPI
 import uvicorn
 from src.db import db
-from asyncio import create_subprocess_shell, subprocess
 from fastapi.middleware.cors import CORSMiddleware
 
 
