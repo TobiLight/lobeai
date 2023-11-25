@@ -9,7 +9,7 @@ from schemas.token import TokenRequest
 from schemas.user import UserProfile
 from src.dependencies import get_current_user
 from schemas.query import DatabaseConnection, QueryDB, QueryResponse
-from src.utils.auth import decode_google_token, decode_token
+from src.utils.auth import custom_auth, decode_google_token, decode_token
 from urllib.parse import urlparse
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -30,18 +30,18 @@ def home():
 
 
 @index_router.post("/authenticate")
-async def protected_endpoint(token: TokenRequest):
-    try:
-        user = await decode_google_token(token.token)
-    except:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Could not validate credentials!")
+def protected_endpoint(user: Annotated[UserProfile, Depends(custom_auth)]):
+    # try:
+    #     user = await decode_google_token(token.token)
+    # except:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+    #                         detail="Could not validate credentials!")
 
     return {"message": "This is a protected endpoint", "user": user}
 
 
 @index_router.post("/create-db", summary="Create a Database connection from user")
-async def create_dbconn(db_conn: DatabaseConnection, request: Request):
+async def create_dbconn(db_conn: DatabaseConnection, request: Request, user: UserProfile = Depends(custom_auth)):
     """"""
     from sqlalchemy import create_engine
 

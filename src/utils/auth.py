@@ -1,9 +1,10 @@
 from typing import Union
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError, ExpiredSignatureError
 from schemas.token import TokenPayload, TokenRequest
+from schemas.user import UserProfile
 from src.db import db
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -114,14 +115,15 @@ def decode_token(token: str) -> Union[str, None]:
     return None
 
 
-async def decode_google_token(token: str):
+async def decode_google_token(token: TokenRequest) -> UserProfile:
     try:
         id_info = id_token.verify_oauth2_token(
-            token, google_request)
+            token.token, google_request)
     except exceptions.GoogleAuthError as e:
+        print(e)
         if 'Token expired' in e.args[0]:
             raise Exception("Token has expired!")
-        raise (None)
+        return None
 
     if id_info["iss"] == "https://accounts.google.com":
         try:
@@ -134,9 +136,21 @@ async def decode_google_token(token: str):
                     "email": id_info["email"],
                     "name": id_info["name"]
                 })
+                new_user = {
+                    "id": new_user.id,
+                    "email": new_user.email,
+                    "name": new_user.name
+                }
             return new_user
         except errors.PrismaError as e:
             print(e)
             print("An error has occured while creating an account!")
 
     return None
+
+
+async def custom_auth(user: UserProfile = Depends(decode_google_token)):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Invalid credentials!", headers={"Authorization": "Bearer"})
+    return user

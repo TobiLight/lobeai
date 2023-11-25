@@ -31,8 +31,8 @@ class UserLogin(BaseModel):
 class UserProfile(BaseModel):
     id: UUID = Field(...)
     email: EmailStr = Field(...)
-    first_name: Union[str, None] = Field(default=None)
-    last_name: Union[str, None] = Field(default=None)
+    # first_name: Union[str, None] = Field(default=None)
+    name: Union[str, None] = Field(default=None)
     created_at: datetime.datetime = Field(default=datetime.datetime.now())
     updated_at: datetime.datetime = Field(default=datetime.datetime.now())
 

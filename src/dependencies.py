@@ -35,3 +35,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserProfile:
     return UserProfile(id=user.id, email=user.email,
                        first_name=user.first_name, last_name=user.last_name,
                        created_at=user.created_at, updated_at=user.updated_at)
+
+# async def custom_auth(token: str =  Depends(decode_google_token)):
+#     user =
