@@ -35,11 +35,15 @@ def protected_endpoint(user: Annotated[UserProfile, Depends(custom_auth)]):
 
 
 @index_router.post("/create-db", summary="Create a Database connection from user")
-async def create_dbconn(db_conn: DatabaseConnection = Depends(DatabaseConnection.as_form), user: UserProfile = Depends(custom_auth)):
+async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends(custom_auth)):
     """"""
     from sqlalchemy import create_engine
 
     parsed_url = urlparse(db_conn.uri)
+
+    existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
+    if existing_conn:
+        return {"status": "Database connection exists already!"}
 
     if not parsed_url.hostname or not parsed_url.path[1:] or parsed_url.path[1:] == '':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
