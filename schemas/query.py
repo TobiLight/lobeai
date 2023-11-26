@@ -8,6 +8,10 @@ class QueryDB(BaseModel):
     query: str
 
 
+class QueryPrompt(BaseModel):
+    query: str
+    database_id: Union[str, None]
+
 class QueryResponse(BaseModel):
     query: str
     response: str

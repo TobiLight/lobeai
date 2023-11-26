@@ -2,16 +2,12 @@
 # File: index.py
 
 from sqlite3 import OperationalError
-from typing_extensions import Annotated
-from fastapi import APIRouter, Body, Depends, Form, HTTPException, Request, responses, Response
+from fastapi import APIRouter, Depends, HTTPException, responses
 from fastapi import status, responses
-from schemas.token import TokenRequest
 from schemas.user import UserProfile
-from src.dependencies import get_current_user
-from schemas.query import DatabaseConnection, QueryDB, QueryResponse
-from src.utils.auth import custom_auth, decode_google_token, decode_token
+from schemas.query import DatabaseConnection, QueryDB
+from src.utils.auth import custom_auth
 from urllib.parse import urlparse
-from google.oauth2 import id_token
 from google.auth.transport import requests
 from src.db import db
 from uuid import uuid4
@@ -20,19 +16,14 @@ from prisma import errors
 google_request = requests.Request()
 
 
-index_router = APIRouter(responses={404: {"description": "Not Found!"}})
+index_router = APIRouter(
+    responses={404: {"description": "Not Found!"}}, tags=["Database"])
 
 
 @index_router.get("/", summary="Homepage")
 def home():
     return responses.JSONResponse(status_code=status.HTTP_200_OK,
                                   content="Welcome to AI powered E-commerce")
-
-
-@index_router.post("/authenticate")
-def protected_endpoint(user: Annotated[UserProfile, Depends(custom_auth)]):
-    return {"message": "This is a protected endpoint", "user": user}
-
 
 @index_router.post("/create-db", summary="Create a Database connection from user")
 async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends(custom_auth)):
