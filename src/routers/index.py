@@ -35,7 +35,7 @@ def protected_endpoint(user: Annotated[UserProfile, Depends(custom_auth)]):
 
 
 @index_router.post("/create-db", summary="Create a Database connection from user")
-async def create_dbconn(db_conn: DatabaseConnection = Depends(DatabaseConnection.as_form), user: UserProfile = Depends(custom_auth)):
+async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends(custom_auth)):
     """"""
     from sqlalchemy import create_engine
 
@@ -46,6 +46,10 @@ async def create_dbconn(db_conn: DatabaseConnection = Depends(DatabaseConnection
         return {"status": "Database connection exists already!"}
 
     if db_conn.database_type != 'mongodb' and (not parsed_url.hostname or not parsed_url.path[1:] or parsed_url.path[1:] == ''):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Invalid Database URI")
+    print(parsed_url.hostname, parsed_url.path[1:])
+    if db_conn.database_type == 'mongodb' and (not parsed_url.hostname):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Invalid Database URI")
     if db_conn.database_type == 'postgresql':
