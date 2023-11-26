@@ -35,7 +35,7 @@ def protected_endpoint(user: Annotated[UserProfile, Depends(custom_auth)]):
 
 
 @index_router.post("/create-db", summary="Create a Database connection from user")
-async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends(custom_auth)):
+async def create_dbconn(db_conn: DatabaseConnection = Depends(DatabaseConnection.as_form), user: UserProfile = Depends(custom_auth)):
     """"""
     from sqlalchemy import create_engine
 
@@ -45,7 +45,7 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
     if existing_conn:
         return {"status": "Database connection exists already!"}
 
-    if not parsed_url.hostname or not parsed_url.path[1:] or parsed_url.path[1:] == '':
+    if db_conn.database_type != 'mongodb' and (not parsed_url.hostname or not parsed_url.path[1:] or parsed_url.path[1:] == ''):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Invalid Database URI")
     if db_conn.database_type == 'postgresql':
@@ -62,8 +62,7 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
         from os import getenv
         MONGO_URI = getenv("MONGO_URI")
 
-        client_mongo = MongoClient(
-            MONGO_URI if MONGO_URI else "mongodb+srv://0xTobi:EdmtTjWvlPNa2vnl@cluster0.ogakrxv.mongodb.net/?retryWrites=true&w=majority")
+        client_mongo = MongoClient(db_conn.uri)
         if not client_mongo.is_mongos:
             print("Connected to a standalone MongoDB server")
 
@@ -90,9 +89,9 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
     try:
         engine.connect().close()
         print("Database is connected.")
-        existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
-        if existing_conn:
-            return {"status": "Database connection exists already!"}
+        # existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
+        # if existing_conn:
+        #     return {"status": "Database connection exists already!"}
         await db.databaseconnection.create({
             "id": str(uuid4()),
             "user_id": user.id,
