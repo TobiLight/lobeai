@@ -122,8 +122,7 @@ async def get_dbconn(user: UserProfile = Depends(custom_auth)):
 
 @index_router.post('/query', summary="Query Database with NL")
 async def query_database(q: QueryDB, db: DatabaseConnection,
-                         current_user: Annotated[QueryResponse,
-                                                 Depends(get_current_user)]):
+                         user: UserProfile = Depends(custom_auth)):
     from prisma import Prisma
     # get connection string from user
     db_conn = await Prisma(datasource={"url": "postgresql://postgres:admin123.@localhost:5433/alx_overflow"}).connect()
