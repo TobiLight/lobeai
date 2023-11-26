@@ -91,8 +91,8 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
         })
         client_mongo.close()
         return {"status": "OK", "data": {
-            "id": existing_conn.id,
-            "uri": existing_conn.uri
+            "id": new_db_conn.id,
+            "uri": new_db_conn.uri
         }}
 
     try:
@@ -110,8 +110,8 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
             status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))
 
     return {"status": "Ok", "data": {
-            "id": existing_conn.id,
-            "uri": existing_conn.uri
+            "id": new_db_conn.id,
+            "uri": new_db_conn.uri
             }}
 
 
