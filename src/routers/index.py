@@ -3,7 +3,7 @@
 
 from sqlite3 import OperationalError
 from typing_extensions import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Request, responses, Response
+from fastapi import APIRouter, Body, Depends, Form, HTTPException, Request, responses, Response
 from fastapi import status, responses
 from schemas.token import TokenRequest
 from schemas.user import UserProfile
@@ -35,7 +35,7 @@ def protected_endpoint(user: Annotated[UserProfile, Depends(custom_auth)]):
 
 
 @index_router.post("/create-db", summary="Create a Database connection from user")
-async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends(custom_auth)):
+async def create_dbconn(db_conn: DatabaseConnection = Depends(DatabaseConnection.as_form), user: UserProfile = Depends(custom_auth)):
     """"""
     from sqlalchemy import create_engine
 
@@ -44,7 +44,6 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
     if not parsed_url.hostname or not parsed_url.path[1:] or parsed_url.path[1:] == '':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Invalid Database URI")
-
     if db_conn.database_type == 'postgresql':
         engine = create_engine(
             "postgresql+psycopg2://{}:{}@{}:{}/{}".format(parsed_url.username, parsed_url.password, parsed_url.hostname,
