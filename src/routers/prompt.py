@@ -50,8 +50,7 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
             "conversation_id": query.conversation_id,
         })
         # store prompt in conversation table
-        # conversation = await db.conversation.update(where={"id": query.conversation_id}, data={"prompts": {"connect": [{"id": user_prompts.id}]}})
-        # conversation = await db.conversation.update(where={"id": query.conversation_id}, data={"prompts": {"connect": [{"id": user_prompts.id}]}})
+        conversation = await db.conversation.update(where={"id": query.conversation_id}, data={"prompts": {"connect": [{"id": user_prompts.id}]}})
 
         print(conversation)
         return {"status": "Ok", "data": response}

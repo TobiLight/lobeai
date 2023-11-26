@@ -24,8 +24,8 @@ model User {
 model Conversation {
     id         String   @id @unique
     prompts    Prompt[]
-    user_id    String
     user       User     @relation(fields: [user_id], references: [id])
+    user_id    String
     created_at DateTime @default(now())
     updated_at DateTime @default(now())
 }
@@ -34,8 +34,8 @@ model Prompt {
     id              String       @id @unique
     query           String
     response        String
-    conversation_id String
     conversation    Conversation @relation(fields: [conversation_id], references: [id])
+    conversation_id String
     created_at      DateTime     @default(now())
     updated_at      DateTime     @default(now())
 }

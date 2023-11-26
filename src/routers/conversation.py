@@ -25,7 +25,7 @@ async def get_conversations(user: UserProfile = Depends(custom_auth)):
 @conversation_router.get("/conversation", summary="Get a conversation")
 async def get_conversation(conversation_id: str, user: UserProfile = Depends(custom_auth)):
     """"""
-    conversation = await db.conversation.find_unique(where={"id": conversation_id})
+    conversation = await db.conversation.find_unique(where={"id": conversation_id}, include={"prompts": True})
     return {
         "status": "Ok",
         "conversation_id": conversation
@@ -35,13 +35,9 @@ async def get_conversation(conversation_id: str, user: UserProfile = Depends(cus
 @conversation_router.post("/create-conversation", summary="Create a conversation",)
 async def create_conversation(user: UserProfile = Depends(custom_auth)):
     """"""
-    new_conversation = await db.conversation.create(data={
+    new_conversation = await db.conversation.create({
         "id": str(uuid4()),
-        "user_id": user.id,
-        # "prompts": {'connect': list()},
-        # "user": {'connect': {"id": user.id}}
-        # "prompts": [{"id": "1", "query": "fghj", "response": "sdfg", "user_id": user.id}],
-        # "user": user.model_dump_json()
-    })
+        "user_id": user.id
+    }, include={"prompts": True})
 
     return {"status": "Ok", "data": new_conversation}
