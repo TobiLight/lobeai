@@ -4,6 +4,7 @@ from fastapi import FastAPI
 import uvicorn
 from src.db import db
 from fastapi.middleware.cors import CORSMiddleware
+from prisma import errors
 
 
 def init_app():
@@ -17,12 +18,19 @@ def init_app():
         "*"
     ]
 
+    app.add_middleware(CORSMiddleware,
+                       allow_origins=origins,
+                       allow_credentials=True,
+                       allow_methods=["*"],
+                       allow_headers=["*"],)
+
     @app.on_event("startup")
     async def startup():
         try:
             await db.connect()
             print("✅ Database Connected!")
-        except:
+        except errors.PrismaError as e:
+            print(e)
             print("❌ An error has occured")
 
     @app.on_event("shutdown")
@@ -30,11 +38,6 @@ def init_app():
         await db.disconnect()
 
     from src import api
-    app.add_middleware(CORSMiddleware,
-                       allow_origins=origins,
-                       allow_credentials=True,
-                       allow_methods=["*"],
-                       allow_headers=["*"],)
     app.include_router(api)
     return app
 
