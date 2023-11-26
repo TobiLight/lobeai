@@ -43,7 +43,10 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
 
     existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
     if existing_conn:
-        return {"status": "Database connection exists already!"}
+        return {"status": "Database connection exists already!", "data": {
+            "id": existing_conn.id,
+            "uri": existing_conn.uri
+        }}
 
     if db_conn.database_type != 'mongodb' and (not parsed_url.hostname or not parsed_url.path[1:] or parsed_url.path[1:] == ''):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -74,10 +77,13 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
         if client_mongo.is_primary:
             print("Connected to the primary node in a replica set")
 
-        existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
-        if existing_conn:
-            return {"status": "Database connection exists already!"}
-        await db.databaseconnection.create({
+        # existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
+        # if existing_conn:
+        #     return {"status": "Database connection exists already!", "data": {
+        #         "id": existing_conn.id,
+        #         "uri": existing_conn.uri
+        #     }}
+        new_db_conn = await db.databaseconnection.create({
             "id": str(uuid4()),
             "user_id": user.id,
             "uri": parsed_url.geturl(),
@@ -88,15 +94,15 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
             "type": db_conn.database_type
         })
         client_mongo.close()
-        return {"status": "OK"}
+        return {"status": "OK", "data": {
+            "id": existing_conn.id,
+            "uri": existing_conn.uri
+        }}
 
     try:
         engine.connect().close()
         print("Database is connected.")
-        # existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
-        # if existing_conn:
-        #     return {"status": "Database connection exists already!"}
-        await db.databaseconnection.create({
+        new_db_conn = await db.databaseconnection.create({
             "id": str(uuid4()),
             "user_id": user.id,
             "uri": parsed_url.geturl(),
@@ -111,7 +117,10 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))
 
-    return {"status": "OK"}
+    return {"status": "Ok", "data": {
+            "id": existing_conn.id,
+            "uri": existing_conn.uri
+            }}
 
 
 @index_router.get("/get-db", summary="Get Database Connection URI")
