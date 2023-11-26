@@ -36,7 +36,7 @@ def generate_sql(query_text: str, table_meta: Dict[str, str]):
         messages=[
             {
                 "role": "system",
-                "content": "You are a helpful assistant that knows a lot about SQL language and manages a database. \nYou are using PostgreSQL as the database and Prisma as the ORM.\n\n You MUST answer only with a correct Python Prisma ORM query and don't wrap it into a code block. Don't include any explanation.\n Today is {}.\n\n The database tables are: {}. The table is a hashmap of table name as keys and the schemas as values.".format(datetime.now().date(), table_meta)
+                "content": "You are a helpful assistant that knows a lot about SQL language and manages a database. \nYou are using PostgreSQL as the database and SQLAlchemy as the ORM.\n\n You MUST answer only with a correct SQL query and don't wrap it into a code block. The schema name is 'public'. Don't include any explanation.\n Today is {}.\n\n The database tables are: {}. The table is a hashmap of table name as keys and the schemas as values.".format(datetime.now().date(), table_meta)
             },
             {
                 "role": "user",
@@ -51,13 +51,25 @@ def generate_sql(query_text: str, table_meta: Dict[str, str]):
 async def keys_in_tables(tables: str):
     """"""
     from src.db import db
-    print(tables)
     result = tables.replace("'", "").split(", ")
     data = {}
-    # for res in result:
-    #     query = f"SELECT column_name FROM information_schema.columns WHERE table_schema = \'public\' AND table_name = \'{res}\';"
-    #     columns = await db.query_raw(query)
-    #     data[res] = columns
+    for res in result:
+        print(res)
+        query = f"SELECT column_name FROM information_schema.columns WHERE table_schema = \'public\' AND table_name = \'{res}\';"
+        columns = await db.query_raw(query)
+        data[res] = columns
+    return data
+
+
+async def keys_in_sql_tables(tables: str):
+    """"""
+    from src.db import db
+    result = tables.replace('"', "").split(", ")
+    data = {}
+    for res in result:
+        query = f"SELECT column_name FROM information_schema.columns WHERE table_schema = \'public\' AND table_name = \'{res}\';"
+        columns = await db.query_raw(query)
+        data[res] = columns
     return data
 
 

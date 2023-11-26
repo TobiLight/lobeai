@@ -15,6 +15,7 @@ class QueryDB(BaseModel):
 class QueryPrompt(BaseModel):
     query: str
     database_id: Union[str, None]
+    conversation_id: Union[str, None]
 
 class QueryResponse(BaseModel):
     query: str
