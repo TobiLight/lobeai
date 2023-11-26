@@ -87,10 +87,6 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
             "id": str(uuid4()),
             "user_id": user.id,
             "uri": parsed_url.geturl(),
-            "port": str(parsed_url.port),
-            "host": parsed_url.path[1:],
-            "username": parsed_url.username,
-            "password": parsed_url.password,
             "type": db_conn.database_type
         })
         client_mongo.close()
@@ -106,10 +102,6 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
             "id": str(uuid4()),
             "user_id": user.id,
             "uri": parsed_url.geturl(),
-            "port": str(parsed_url.port),
-            "host": parsed_url.path[1:],
-            "username": parsed_url.username,
-            "password": parsed_url.password,
             "type": db_conn.database_type
         })
     except (errors.PrismaError, OperationalError) as e:
@@ -132,7 +124,7 @@ async def get_dbconn(user: UserProfile = Depends(custom_auth)):
         print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))
-    return {"databases": [*existing_conn]}
+    return {"status": "Ok", "data": [*existing_conn]}
 
 
 @index_router.post('/query', summary="Query Database with NL")

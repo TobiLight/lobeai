@@ -44,10 +44,6 @@ model DatabaseConnection {
     id         String   @id @unique
     type       String
     uri        String
-    username   String
-    password   String
-    host       String
-    port       String
     user_id    String
     user       User     @relation(fields: [user_id], references: [id])
     created_at DateTime @default(now())
