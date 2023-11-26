@@ -1,5 +1,3 @@
-from pymongo import MongoClient
-from os import getenv
 from prisma import Prisma
 
 db = Prisma(auto_register=True)
