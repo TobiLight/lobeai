@@ -48,7 +48,7 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
     if db_conn.database_type == 'postgresql':
         engine = create_engine(
             "postgresql+psycopg2://{}:{}@{}:{}/{}".format(parsed_url.username, parsed_url.password, parsed_url.hostname,
-                                                          parsed_url.port, parsed_url.path[1:]))
+                                                          parsed_url.port, parsed_url.path[1:]), echo=True)
     elif db_conn.database_type == 'mysql':
         engine = create_engine(
             "mysql+mysqldb://{}:{}@{}:{}/{}".format(parsed_url.username, parsed_url.password, parsed_url.hostname,

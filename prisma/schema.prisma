@@ -1,7 +1,7 @@
 // database
 datasource db {
     provider = "postgresql"
-    url      = "postgres://default:k54XFZVYSBMs@ep-lucky-surf-30699190.us-east-1.postgres.vercel-storage.com:5432/verceldb"
+    url      = "postgresql://postgres:3c2Fc4414dbb*BgaC*6GA-3E133EdGFE@viaduct.proxy.rlwy.net:58903/railway"
 }
 
 // generator
