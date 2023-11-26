@@ -51,12 +51,13 @@ def generate_sql(query_text: str, table_meta: Dict[str, str]):
 async def keys_in_tables(tables: str):
     """"""
     from src.db import db
+    print(tables)
     result = tables.replace("'", "").split(", ")
     data = {}
-    for res in result:
-        query = f"SELECT column_name FROM information_schema.columns WHERE table_schema = \'public\' AND table_name = \'{res}\';"
-        columns = await db.query_raw(query)
-        data[res] = columns
+    # for res in result:
+    #     query = f"SELECT column_name FROM information_schema.columns WHERE table_schema = \'public\' AND table_name = \'{res}\';"
+    #     columns = await db.query_raw(query)
+    #     data[res] = columns
     return data
 
 
