@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# File: auth.py
+# Author: Oluwatobiloba Light
+
 from typing import Union
 from typing_extensions import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # File: main.py
+# Author: Oluwatobiloba Light
 from fastapi import FastAPI
 import uvicorn
 from src.db import db

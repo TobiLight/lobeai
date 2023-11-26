@@ -1,7 +1,11 @@
+#!/usr/bin/python3
+# File: user.py
+# Author: Oluwatobiloba Light
+
 from enum import Enum
 from typing import Union
 from fastapi import Form
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class QueryDB(BaseModel):

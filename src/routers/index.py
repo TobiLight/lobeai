@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # File: index.py
+# Author: Oluwatobiloba Light
 
 from sqlite3 import OperationalError
 from fastapi import APIRouter, Depends, HTTPException, responses
@@ -24,6 +25,7 @@ index_router = APIRouter(
 def home():
     return responses.JSONResponse(status_code=status.HTTP_200_OK,
                                   content="Welcome to AI powered E-commerce")
+
 
 @index_router.post("/create-db", summary="Create a Database connection from user")
 async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends(custom_auth)):
@@ -58,7 +60,6 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
         # handle mongodb connection here
         from pymongo.mongo_client import MongoClient
         from os import getenv
-        MONGO_URI = getenv("MONGO_URI")
 
         client_mongo = MongoClient(db_conn.uri)
         if not client_mongo.is_mongos:
@@ -68,12 +69,6 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
         if client_mongo.is_primary:
             print("Connected to the primary node in a replica set")
 
-        # existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
-        # if existing_conn:
-        #     return {"status": "Database connection exists already!", "data": {
-        #         "id": existing_conn.id,
-        #         "uri": existing_conn.uri
-        #     }}
         new_db_conn = await db.databaseconnection.create({
             "id": str(uuid4()),
             "user_id": user.id,

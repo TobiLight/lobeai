@@ -1,9 +1,13 @@
+#!/usr/bin/python3
+# File: auth.py
+# Author: Oluwatobiloba Light
+
 from typing import Union
 from fastapi import Depends, HTTPException, Request, status
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError, ExpiredSignatureError
-from schemas.token import TokenPayload, TokenRequest
+from schemas.token import TokenPayload
 from schemas.user import UserProfile
 from src.db import db
 from google.oauth2 import id_token

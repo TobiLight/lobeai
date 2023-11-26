@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # File: aiquery.py
+# Author: Oluwatobiloba Light
 
 from typing import Dict, List
 from src.openai import client
@@ -11,7 +12,7 @@ def get_applicable_tables(query_text: str, table_meta: List[str]):
     Get applicable tables from database
     """
     completion = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[
             {
                 "role": "system",
@@ -21,10 +22,6 @@ def get_applicable_tables(query_text: str, table_meta: List[str]):
                 "role": "user",
                 "content": "Tell me which tables from the list of tables you would use to make this query:\n{}".format(query_text),
             },
-            # {
-            #     "role": "user",
-            #     "content": "{}".format(query_text)
-            # }
         ]
     )
     return completion.choices[0].message.content

@@ -1,6 +1,9 @@
+#!/usr/bin/python3
+# File: user.py
+# Author: Oluwatobiloba Light
+
 from typing import Union
 from uuid import UUID
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, EmailStr, Field
 import datetime
 

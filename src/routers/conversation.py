@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# File: conversation.py
+# Author: Oluwatobiloba Light
+
 from fastapi import APIRouter, Depends
 from schemas.user import UserProfile
 from src.utils.auth import custom_auth
