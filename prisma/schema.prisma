@@ -1,7 +1,7 @@
 // database
 datasource db {
     provider = "postgresql"
-    url      = "postgresql://postgres:3c2Fc4414dbb*BgaC*6GA-3E133EdGFE@viaduct.proxy.rlwy.net:58903/railway"
+    url      = "postgresql://postgres:3c2Fc4414dbb*BgaC*6GA-3E133EdGFE@postgres.railway.internal:5432/railway"
 }
 
 // generator
