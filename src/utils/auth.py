@@ -143,7 +143,7 @@ async def decode_google_token(request: Request) -> UserProfile:
                     "id": str(uuid4()),
                     "email": id_info["email"],
                     "name": id_info["name"]
-                })
+                }, include={"database_connections": True, "conversations": True})
                 new_user = {
                     "id": new_user.id,
                     "email": new_user.email,

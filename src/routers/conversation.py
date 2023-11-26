@@ -15,7 +15,7 @@ conversation_router = APIRouter(
 @conversation_router.get("/conversations", summary="Get all conversations")
 async def get_conversations(user: UserProfile = Depends(custom_auth)):
     """"""
-    conversations = await db.conversation.find_many()
+    conversations = await db.conversation.find_many(where={"user_id": user.id}, include={"prompts": True})
     return {
         "status": "Ok",
         "data": conversations
@@ -23,12 +23,12 @@ async def get_conversations(user: UserProfile = Depends(custom_auth)):
 
 
 @conversation_router.get("/conversation", summary="Get a conversation")
-async def get_conversation(conversation_id: str, user: UserProfile = Depends(custom_auth)):
+async def get_conversation(id: str, user: UserProfile = Depends(custom_auth)):
     """"""
-    conversation = await db.conversation.find_unique(where={"id": conversation_id}, include={"prompts": True})
+    conversation = await db.conversation.find_first(where={"id": id, "user_id": user.id}, include={"prompts": True})
     return {
         "status": "Ok",
-        "conversation_id": conversation
+        "conversation": conversation
     }
 
 
