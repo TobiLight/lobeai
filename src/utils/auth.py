@@ -129,7 +129,6 @@ async def decode_google_token(request: Request) -> UserProfile:
                                 detail="Token has expired!", headers={"Authorization": "Bearer"})
         return None
 
-    print(id_info)
     if id_info["iss"] == "https://accounts.google.com":
         try:
             existing_user = await db.user.find_first(where={"email": id_info["email"]})
