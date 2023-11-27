@@ -155,7 +155,7 @@ async def decode_google_token(request: Request) -> UserProfile:
             print(e)
             print("An error has occured while creating an account!")
             HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                          detail="Something went wrong!", headers={"Authorization": "Bearer"})
+                          detail="Something went wrong!", headers={"Authorization": "Bearer {}".format(token)})
 
     return None
 
