@@ -19,7 +19,6 @@ model User {
     database_connections DatabaseConnection[]
     created_at           DateTime             @default(now())
     updated_at           DateTime             @default(now())
-    Prompt               Prompt[]
 }
 
 model Conversation {
@@ -37,19 +36,17 @@ model Prompt {
     response        String
     conversation    Conversation @relation(fields: [conversation_id], references: [id])
     conversation_id String
-    user            User         @relation(fields: [user_id], references: [id])
-    user_id         String
     created_at      DateTime     @default(now())
     updated_at      DateTime     @default(now())
 }
 
 model DatabaseConnection {
-    id            String   @id @unique
-    type          String
-    uri           String
+    id         String   @id @unique
+    type       String
+    uri        String
     database_name String?
-    user_id       String
-    user          User     @relation(fields: [user_id], references: [id])
-    created_at    DateTime @default(now())
-    updated_at    DateTime @default(now())
+    user_id    String
+    user       User     @relation(fields: [user_id], references: [id])
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
 }
