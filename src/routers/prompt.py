@@ -75,6 +75,7 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
             "query": query.query,
             "response": response,
             "conversation_id": query.conversation_id,
+            "user_id": user.id
         })
         # store prompt in conversation table
         conversation = await prismadb.conversation.update(where={"id": query.conversation_id}, data={"prompts": {"connect": [{"id": user_prompts.id}]}})
