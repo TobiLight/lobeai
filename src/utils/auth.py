@@ -125,7 +125,7 @@ async def decode_google_token(request: Request) -> UserProfile:
         return None
     token = request.headers.get("Authorization")
     token = token.split()[1]
-    print(token)
+    print("token: ", token)
     try:
         id_info = id_token.verify_oauth2_token(
             token, google_request)
