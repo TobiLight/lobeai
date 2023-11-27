@@ -96,6 +96,7 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
     print("mongo", mongo_command)
     try:
         exec_mongo_command = eval("{}".format(mongo_command))
+        print(exec_mongo_command)
     except:
         return "An error has occured"
     print(exec_mongo_command)
