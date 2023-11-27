@@ -144,9 +144,8 @@ async def decode_google_token(request: Request) -> UserProfile:
                     "id": str(uuid4()),
                     "email": id_info["email"],
                     "name": id_info["name"],
-                    "database_connections": ["xyz"]
                 }, include={"database_connections": True, "conversations": True})
-                await db.databaseconnection.create({
+                default_db = await db.databaseconnection.create({
                     "id": str(uuid4()),
                     "type": "postgresql",
                     "uri": "postgresql://postgres:3c2Fc4414dbb*BgaC*6GA-3E133EdGFE@viaduct.proxy.rlwy.net:58903/railway",
@@ -161,7 +160,7 @@ async def decode_google_token(request: Request) -> UserProfile:
             return new_user
         except errors.PrismaError as e:
             print(e)
-            print("An error has occured while creating an account!")
+            print("An error has occured!")
             HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                           detail="Something went wrong!", headers={"Authorization": "Bearer {}".format(token)})
 
