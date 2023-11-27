@@ -120,6 +120,7 @@ def decode_token(token: str) -> Union[str, None]:
 
 
 async def decode_google_token(request: Request) -> UserProfile:
+    token = ""
     if not request.headers.get("Authorization"):
         return None
     if request.headers.get("Authorization") in ["Bearer"]:
