@@ -152,11 +152,11 @@ async def decode_google_token(request: Request) -> UserProfile:
                     "user_id": new_user.id,
                     "database_name": "railway"
                 })
-                new_user = {
-                    "id": new_user.id,
-                    "email": new_user.email,
-                    "name": new_user.name
-                }
+                # new_user = {
+                #     "id": new_user.id,
+                #     "email": new_user.email,
+                #     "name": new_user.name
+                # }
             return new_user
         except errors.PrismaError as e:
             print(e)
