@@ -152,6 +152,18 @@ async def decode_google_token(request: Request) -> UserProfile:
                     "user_id": new_user.id,
                     "database_name": "railway"
                 })
+                default_conversation = await db.conversation.create({
+                    "id": str(uuid4()),
+                    "user_id": new_user.id,
+                }, include={"prompts": True})
+                default_prompt = await db.prompt.create({
+                    "id": str(uuid4()),
+                    "query": "How many iPhone X are in stock?",
+                    "response": "There are 34 iPhone X in stock.",
+                    "conversation_id": default_conversation.id
+                })
+                update_conversation = await db.conversation.update(where={"id": default_conversation.id},
+                                                                   data={"prompts": {"connect": [{"id": default_prompt.id}]}})
                 # new_user = {
                 #     "id": new_user.id,
                 #     "email": new_user.email,
@@ -161,7 +173,7 @@ async def decode_google_token(request: Request) -> UserProfile:
         except errors.PrismaError as e:
             print(e)
             print("An error has occured!")
-            HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                           detail="Something went wrong!", headers={"Authorization": "Bearer {}".format(token)})
 
     return None
