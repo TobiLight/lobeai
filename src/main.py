@@ -12,12 +12,13 @@ def init_app():
     """Initialize app"""
     app = FastAPI(version="1.0.0")
     origins = [
+        "*",
+        "https://stuttern-hackathon-fe-g179.vercel.app/",
+        "https://stuttern-hackathon-fe-g179.vercel.app",
         "http://localhost.tiangolo.com",
         "https://localhost.tiangolo.com",
         "http://localhost",
         "http://localhost:8080",
-        "https://stuttern-hackathon-fe-g179.vercel.app/",
-        "*"
     ]
 
     app.add_middleware(CORSMiddleware,
