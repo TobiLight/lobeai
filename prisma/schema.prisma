@@ -37,8 +37,8 @@ model Prompt {
     response        String
     conversation    Conversation @relation(fields: [conversation_id], references: [id])
     conversation_id String
-    // user            User         @relation(fields: [user_id], references: [id])
-    // user_id         String
+    user            User         @relation(fields: [user_id], references: [id])
+    user_id         String
     created_at      DateTime     @default(now())
     updated_at      DateTime     @default(now())
 }

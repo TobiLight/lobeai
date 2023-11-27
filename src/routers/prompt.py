@@ -2,7 +2,7 @@
 # File: prompt.py
 # Author: Oluwatobiloba Light
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from schemas.query import QueryPrompt
 from schemas.user import UserProfile
 from src.utils.aiquery import generate_mongo, generate_sql, get_applicable_tables_sql, query_response_to_nl
@@ -86,9 +86,12 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
         return {"status": "Ok", "data": response}
 
     from pymongo import MongoClient
-
-    mongodb = MongoClient(
+    try:
+        mongodb = MongoClient(
         "mongodb+srv://0xTobi:ggHrioYrsyJaX7yZ@cluster0.ogakrxv.mongodb.net/")
+    except:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Database connection failed!")
     db = mongodb["sample_mflix"]
     list_of_collections = db.list_collection_names()
     get_tables = get_applicable_tables_sql(query.query, list_of_collections)
@@ -99,11 +102,11 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
     mongo_command = generate_mongo(query.query, data)
     print("mongo", mongo_command)
     try:
-        exec_mongo_command = eval("{}".format(mongo_command))
-        print(exec_mongo_command)
+        mongo_response = eval("{}".format(mongo_command))
+        print(mongo_response)
     except:
         return "An error has occured"
-    print(exec_mongo_command)
+    print(mongo_response)
 
     # tables = await client.query_raw('SELECT table_name FROM\
     #     information_schema.tables WHERE table_schema = \'public\';')
