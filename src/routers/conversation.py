@@ -28,7 +28,7 @@ async def get_conversation(id: str, user: UserProfile = Depends(custom_auth)):
     conversation = await db.conversation.find_first(where={"id": id, "user_id": user.id}, include={"prompts": True})
     return {
         "status": "Ok",
-        "conversation": conversation
+        "data": conversation
     }
 
 
