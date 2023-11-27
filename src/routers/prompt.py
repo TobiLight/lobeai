@@ -5,8 +5,7 @@
 from fastapi import APIRouter, Depends
 from schemas.query import QueryPrompt
 from schemas.user import UserProfile
-from src.utils.aiquery import generate_sql, get_applicable_tables_sql, query_response_to_nl
-from src.db import db
+from src.utils.aiquery import generate_mongo, generate_sql, get_applicable_tables_sql, query_response_to_nl
 from src.utils.auth import custom_auth
 from uuid import uuid4
 
@@ -17,12 +16,15 @@ prompt_router = APIRouter(
 @prompt_router.post("/create-prompt", summary="Create a prompt")
 async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_auth)):
     """"""
+    data = {}
     if not query:
         return {"status": "Error", "message": "Query cannot be empty!"}
     print(query.database_id)
+    from src.db import db as prismadb
+
 
     # check if database already exists
-    existing_db = await db.databaseconnection.find_unique(where={"id": query.database_id})
+    existing_db = await prismadb.databaseconnection.find_unique(where={"id": query.database_id})
     if not existing_db:
         return {"status": "Error", "message": "Database does not exist! Consider creating a new database"}
 
@@ -40,7 +42,6 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
         if existing_db.type == 'postgresql':
             get_tables_keys = get_tables.replace('"', "").split(", ")
-            data = {}
             for table_name, table in metadata.tables.items():
                 # Extract column names
                 column_names = [column.name for column in table.columns]
@@ -52,7 +53,6 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
                 query.query, get_tables_keys, "The schema name is 'public'.", "PostgreSQL")
         else:
             get_tables_keys = get_tables.replace('"', "").split(", ")
-            data = {}
             for table_name, table in metadata.tables.items():
                 # Extract column names
                 column_names = [column.name for column in table.columns]
@@ -63,27 +63,37 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
                 query.query, data, "", "MySQL")
 
         sql_query = text('{}'.format(sql_command))
+        # if sql_query in "As "
         sql_result = postgres_session.execute(sql_query).all()
         response = query_response_to_nl(query.query, sql_result)
 
-        user_prompts = await db.prompt.create({
+        user_prompts = await prismadb.prompt.create({
             "id": str(uuid4()),
             "query": query.query,
             "response": response,
             "conversation_id": query.conversation_id,
         })
         # store prompt in conversation table
-        conversation = await db.conversation.update(where={"id": query.conversation_id}, data={"prompts": {"connect": [{"id": user_prompts.id}]}})
-
+        conversation = await prismadb.conversation.update(where={"id": query.conversation_id}, data={"prompts": {"connect": [{"id": user_prompts.id}]}})
+        postgres_session.close()
         return {"status": "Ok", "data": response}
 
     from pymongo import MongoClient
 
     mongodb = MongoClient(
-        "mongodb+srv://dero:niggaholli@nodeprojects.l1dvlqq.mongodb.net/sample_mflix")
-    client = mongodb["sample_mflix"]
-    list_of_collections = client.list_collection_names()
-    print(list_of_collections)
+        "mongodb+srv://0xTobi:ggHrioYrsyJaX7yZ@cluster0.ogakrxv.mongodb.net/")
+    db = mongodb["sample_mflix"]
+    list_of_collections = db.list_collection_names()
+    get_tables = get_applicable_tables_sql(query.query, list_of_collections)
+    get_tables_keys = get_tables.replace('"', "").split(", ")
+    for table in get_tables_keys:
+        columns = list(db.get_collection(table).find_one().keys())
+        data[table] = columns
+    mongo_command = generate_mongo(query.query, data)
+    print("mongo", mongo_command)
+    exec_mongo_command = eval("{}".format(mongo_command))
+    print(exec_mongo_command)
+
     # tables = await client.query_raw('SELECT table_name FROM\
     #     information_schema.tables WHERE table_schema = \'public\';')
     # print(tables)

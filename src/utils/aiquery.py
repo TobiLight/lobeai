@@ -27,7 +27,7 @@ def get_applicable_tables_sql(query_text: str, table_meta: List[str]):
     return completion.choices[0].message.content
 
 
-def generate_mongo(query_text: str, table_meta: Dict[str, str], schema: str, db_type: str):
+def generate_mongo(query_text: str, table_meta: Dict[str, str]):
     """
     Generates SQL commands based off of user prompt and generated tables.
     """
