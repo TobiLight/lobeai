@@ -23,6 +23,7 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
     from src.db import db as prismadb
 
     # check if database already exists
+    print(prismadb.is_connected())
     existing_db = await prismadb.databaseconnection.find_first(where={"id": query.database_id})
     if not existing_db:
         return {"status": "Error", "message": "Database does not exist! Consider creating a new database!"}
@@ -85,11 +86,11 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
         postgres_session.close()
         return {"status": "Ok", "data": response}
 
-    from pymongo import MongoClient
+    from pymongo import MongoClient, errors as pyerrors
     try:
         mongodb = MongoClient(
         "mongodb+srv://0xTobi:ggHrioYrsyJaX7yZ@cluster0.ogakrxv.mongodb.net/")
-    except:
+    except (pyerrors.PyMongoError, ):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Database connection failed!")
     db = mongodb["sample_mflix"]
@@ -100,16 +101,13 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
         columns = list(db.get_collection(table).find_one().keys())
         data[table] = columns
     mongo_command = generate_mongo(query.query, data)
-    print("mongo", mongo_command)
     try:
         mongo_response = eval("{}".format(mongo_command))
-        print(mongo_response)
     except:
-        return "An error has occured"
-    print(mongo_response)
-
+        return "An error has occured while executing command"
+    mongo_nl_response = query_response_to_nl(query.query, mongo_response)
     # tables = await client.query_raw('SELECT table_name FROM\
     #     information_schema.tables WHERE table_schema = \'public\';')
     # print(tables)
 
-    return {"status": "Ok"}
+    return {"status": "Ok", "data": mongo_nl_response}
