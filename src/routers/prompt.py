@@ -19,7 +19,6 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
     data = {}
     if not query:
         return {"status": "Error", "message": "Query cannot be empty!"}
-    print(query.database_id)
     from src.db import db as prismadb
 
 
