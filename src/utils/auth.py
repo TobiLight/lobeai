@@ -121,9 +121,10 @@ def decode_token(token: str) -> Union[str, None]:
 
 async def decode_google_token(request: Request) -> UserProfile:
     token: str = ""
-    if not request.headers.get("Authorization").split()[1]:
+    if len(request.headers.get("Authorization")) < 2:
         return None
-    token = request.headers.get("Authorization").split()[1]
+    if len(request.headers.get("Authorization")) > 1:
+        token = request.headers.get("Authorization").split()[1]
     try:
         id_info = id_token.verify_oauth2_token(
             token, google_request)
