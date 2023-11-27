@@ -121,7 +121,6 @@ def decode_token(token: str) -> Union[str, None]:
 
 async def decode_google_token(request: Request) -> UserProfile:
     token: str = ""
-    print(request.headers.get("Authorization").split()[1])
     if not request.headers.get("Authorization").split()[1]:
         return None
     token = request.headers.get("Authorization").split()[1]
