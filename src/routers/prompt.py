@@ -64,7 +64,10 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
         sql_query = text('{}'.format(sql_command))
         # if sql_query in "As "
-        sql_result = postgres_session.execute(sql_query).all()
+        try:
+            sql_result = postgres_session.execute(sql_query).all()
+        except:
+            return "An error has occured!"
         response = query_response_to_nl(query.query, sql_result)
 
         user_prompts = await prismadb.prompt.create({
@@ -91,7 +94,10 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
         data[table] = columns
     mongo_command = generate_mongo(query.query, data)
     print("mongo", mongo_command)
-    exec_mongo_command = eval("{}".format(mongo_command))
+    try:
+        exec_mongo_command = eval("{}".format(mongo_command))
+    except:
+        return "An error has occured"
     print(exec_mongo_command)
 
     # tables = await client.query_raw('SELECT table_name FROM\
