@@ -130,10 +130,8 @@ async def decode_google_token(request: Request) -> UserProfile:
         id_info = id_token.verify_oauth2_token(
             token, google_request)
     except exceptions.GoogleAuthError as e:
-        print(e)
-        if 'Token expired' in e.args[0]:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail="Token has expired!", headers={"Authorization": "Bearer"})
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Invalid credentials!", headers={"Authorization": "Bearer"})
         return None
 
     if id_info["iss"] == "https://accounts.google.com":

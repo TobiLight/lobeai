@@ -15,6 +15,7 @@ def init_app():
         "http://localhost.tiangolo.com",
         "https://localhost.tiangolo.com",
         "http://localhost:8000",
+        "http://localhost:3000",
         "http://localhost",
         "https://stuttern-hackathon-fe-g179.vercel.app/",
         "https://stuttern-hackathon-fe-g179.vercel.app",
