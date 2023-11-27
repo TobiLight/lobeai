@@ -24,9 +24,9 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
 
     # check if database already exists
-    existing_db = await prismadb.databaseconnection.find_unique(where={"id": query.database_id})
+    existing_db = await prismadb.databaseconnection.find_first(where={"id": query.database_id, "user_id": user.id})
     if not existing_db:
-        return {"status": "Error", "message": "Database does not exist! Consider creating a new database"}
+        return {"status": "Error", "message": "Database does not exist! Consider creating a new database!"}
 
     if existing_db.type in ["postgresql", "mysql"]:
         from sqlalchemy import create_engine, MetaData, text

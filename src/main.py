@@ -33,7 +33,7 @@ def init_app():
             print("✅ Database Connected!")
         except errors.PrismaError as e:
             print(e)
-            print("❌ An error has occured")
+            print("❌ DB Connection failed")
 
     @app.on_event("shutdown")
     async def shutdown():
