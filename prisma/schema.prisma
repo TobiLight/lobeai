@@ -44,6 +44,7 @@ model DatabaseConnection {
     id         String   @id @unique
     type       String
     uri        String
+    database_name String?
     user_id    String
     user       User     @relation(fields: [user_id], references: [id])
     created_at DateTime @default(now())

@@ -5,7 +5,7 @@
 from fastapi import APIRouter, Depends
 from schemas.query import QueryPrompt
 from schemas.user import UserProfile
-from src.utils.aiquery import generate_sql, get_applicable_tables_sql, keys_in_sql_tables, query_response_to_nl
+from src.utils.aiquery import generate_sql, get_applicable_tables_sql, query_response_to_nl
 from src.db import db
 from src.utils.auth import custom_auth
 from uuid import uuid4
@@ -77,5 +77,15 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
         return {"status": "Ok", "data": response}
 
+    from pymongo import MongoClient
+
+    mongodb = MongoClient(
+        "mongodb+srv://dero:niggaholli@nodeprojects.l1dvlqq.mongodb.net/sample_mflix")
+    client = mongodb["sample_mflix"]
+    list_of_collections = client.list_collection_names()
+    print(list_of_collections)
+    # tables = await client.query_raw('SELECT table_name FROM\
+    #     information_schema.tables WHERE table_schema = \'public\';')
+    # print(tables)
 
     return {"status": "Ok"}

@@ -16,7 +16,7 @@ def get_applicable_tables_sql(query_text: str, table_meta: List[str]):
         messages=[
             {
                 "role": "system",
-                        "content": "You are a helpful assistant that knows a lot about SQL language and manages a database.\nThe database tables are: {}.\n\n Answer only with a comma separated list of tables, without any explanation. Example response: '\"users\", \"products\"'\n\nIf you think there is a table name that can be used but you aren't sure, please include it anyways.".format(table_meta),
+                        "content": "You are a helpful assistant that knows a lot about SQL and NoSQL language and manages a database.\nThe database tables are: {}.\n\n Answer only with a comma separated list of tables, without any explanation. Example response: '\"users\", \"products\"'\n\nIf you think there is a table name that can be used but you aren't sure, please include it anyways.".format(table_meta),
             },
             {
                 "role": "user",
@@ -25,6 +25,27 @@ def get_applicable_tables_sql(query_text: str, table_meta: List[str]):
         ]
     )
     return completion.choices[0].message.content
+
+
+def generate_mongo(query_text: str, table_meta: Dict[str, str], schema: str, db_type: str):
+    """
+    Generates SQL commands based off of user prompt and generated tables.
+    """
+    queries = client.chat.completions.create(
+        model='gpt-4',
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that knows a lot about NoSQL language and manages a database. \nYou are using MongoDB as the database and PyMongo (a mongodb python package) as the ORM.\n\n You MUST answer only with a correct NoSQL query and don't wrap it into a code block. Don't include any explanation.\n Today is {0}.\n\n The database tables are: {1}. The table is a hashmap of table name as keys and the schemas as values.".format(datetime.now().date(), table_meta)
+            },
+            {
+                "role": "user",
+                "content": "{}".format(query_text),
+            },
+        ]
+    )
+
+    return queries.choices[0].message.content
 
 
 def generate_sql(query_text: str, table_meta: Dict[str, str], schema: str, db_type: str):
@@ -46,33 +67,6 @@ def generate_sql(query_text: str, table_meta: Dict[str, str], schema: str, db_ty
     )
 
     return queries.choices[0].message.content
-
-
-async def keys_in_tables(tables: str):
-    """"""
-    from src.db import db
-    result = tables.replace("'", "").split(", ")
-    data = {}
-    for res in result:
-        print(res)
-        query = f"SELECT column_name FROM information_schema.columns WHERE table_schema = \'public\' AND table_name = \'{res}\';"
-        columns = await db.query_raw(query)
-        data[res] = columns
-    return data
-
-
-async def keys_in_sql_tables(tables: str):
-    """"""
-    from src.db import db
-    result = tables.replace('"', "").split(", ")
-    data = {}
-    for res in result:
-        query = f"SELECT column_name FROM information_schema.columns WHERE table_schema = \'public\' AND table_name = \'{res}\';"
-        columns = await db.query_raw(query)
-        data[res] = columns
-    print(data)
-    return data
-
 
 def query_response_to_nl(query_text: str, query_answer: any):
     """"""

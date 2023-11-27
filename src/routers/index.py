@@ -59,7 +59,6 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
     else:
         # handle mongodb connection here
         from pymongo.mongo_client import MongoClient
-        from os import getenv
 
         client_mongo = MongoClient(db_conn.uri)
         if not client_mongo.is_mongos:
@@ -73,12 +72,14 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
             "id": str(uuid4()),
             "user_id": user.id,
             "uri": parsed_url.geturl(),
-            "type": db_conn.database_type
+            "type": db_conn.database_type,
+            "database_name": db_conn.database_name
         })
         client_mongo.close()
         return {"status": "OK", "data": {
             "id": new_db_conn.id,
-            "uri": new_db_conn.uri
+            "uri": new_db_conn.uri,
+            "database_name": new_db_conn.database_name
         }}
 
     try:
