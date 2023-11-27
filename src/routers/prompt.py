@@ -33,34 +33,39 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
         engine = create_engine(existing_db.uri)
         metadata = MetaData()
         metadata.reflect(bind=engine)
-
+        postgres_session = sessionmaker(bind=engine)()
 
         table_names = list(metadata.tables.keys())
         get_tables = get_applicable_tables_sql(query.query, table_names)
-        print(get_tables)
-        return {}
-        # get_tables_keys = await keys_in_sql_tables(get_tables)
+
         if existing_db.type == 'postgresql':
+            get_tables_keys = get_tables.replace('"', "").split(", ")
+            data = {}
+            for table_name, table in metadata.tables.items():
+                # Extract column names
+                column_names = [column.name for column in table.columns]
+
+                # Store in the dictionary
+                data[table_name] = column_names
+            print(data)
             sql_command = generate_sql(
                 query.query, get_tables_keys, "The schema name is 'public'.", "PostgreSQL")
         else:
-            print(get_tables)
             get_tables_keys = get_tables.replace('"', "").split(", ")
-            print(get_tables_keys)
+            data = {}
+            for table_name, table in metadata.tables.items():
+                # Extract column names
+                column_names = [column.name for column in table.columns]
+
+                # Store in the dictionary
+                data[table_name] = column_names
             sql_command = generate_sql(
-                query.query, get_tables_keys, "", "MySQL")
-            return {}
+                query.query, data, "", "MySQL")
 
-        postgres_session = sessionmaker(bind=engine)()
-        sqlcmd = text('{}'.format(sql_command))
-        # schema_name = text(
-        #     "SELECT schema_name FROM information_schema.schemata;")
-        # schema_res = postgres_session.execute(schema_name).all()
-        # print(schema_res)
-
-        sql_result = postgres_session.execute(sqlcmd).all()
+        sql_query = text('{}'.format(sql_command))
+        sql_result = postgres_session.execute(sql_query).all()
         response = query_response_to_nl(query.query, sql_result)
-        # store the prompt
+
         user_prompts = await db.prompt.create({
             "id": str(uuid4()),
             "query": query.query,
@@ -71,5 +76,6 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
         conversation = await db.conversation.update(where={"id": query.conversation_id}, data={"prompts": {"connect": [{"id": user_prompts.id}]}})
 
         return {"status": "Ok", "data": response}
+
 
     return {"status": "Ok"}
