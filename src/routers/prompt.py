@@ -8,6 +8,7 @@ from schemas.user import UserProfile
 from src.utils.aiquery import generate_mongo, generate_sql, get_applicable_tables_sql, query_response_to_nl
 from src.utils.auth import custom_auth
 from uuid import uuid4
+from prisma import errors
 
 prompt_router = APIRouter(
     responses={404: {"description": "Not Found!"}}, tags=["User Prompts"])
@@ -21,9 +22,8 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
         return {"status": "Error", "message": "Query cannot be empty!"}
     from src.db import db as prismadb
 
-
     # check if database already exists
-    existing_db = await prismadb.databaseconnection.find_first(where={"id": query.database_id, "user_id": user.id})
+    existing_db = await prismadb.databaseconnection.find_first(where={"id": query.database_id})
     if not existing_db:
         return {"status": "Error", "message": "Database does not exist! Consider creating a new database!"}
 
@@ -47,7 +47,7 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
                 # Store in the dictionary
                 data[table_name] = column_names
-            print(data)
+
             sql_command = generate_sql(
                 query.query, get_tables_keys, "The schema name is 'public'.", "PostgreSQL")
         else:
@@ -69,15 +69,19 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
             return "An error has occured!"
         response = query_response_to_nl(query.query, sql_result)
 
-        user_prompts = await prismadb.prompt.create({
-            "id": str(uuid4()),
-            "query": query.query,
-            "response": response,
-            "conversation_id": query.conversation_id,
-            "user_id": user.id
-        })
-        # store prompt in conversation table
-        conversation = await prismadb.conversation.update(where={"id": query.conversation_id}, data={"prompts": {"connect": [{"id": user_prompts.id}]}})
+        try:
+            user_prompts = await prismadb.prompt.create({
+                "id": str(uuid4()),
+                "query": query.query,
+                "response": response,
+                "conversation_id": query.conversation_id,
+                # "user_id": user.id
+            })
+            conversation = await prismadb.conversation.update(where={"id": query.conversation_id}, data={"prompts": {"connect": [{"id": user_prompts.id}]}})
+        except errors.PrismaError as e:
+            print(e)
+            pass
+
         postgres_session.close()
         return {"status": "Ok", "data": response}
 
