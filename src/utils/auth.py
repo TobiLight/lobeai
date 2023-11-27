@@ -143,8 +143,16 @@ async def decode_google_token(request: Request) -> UserProfile:
                 new_user = await db.user.create({
                     "id": str(uuid4()),
                     "email": id_info["email"],
-                    "name": id_info["name"]
+                    "name": id_info["name"],
+                    "database_connections": ["xyz"]
                 }, include={"database_connections": True, "conversations": True})
+                await db.databaseconnection.create({
+                    "id": str(uuid4()),
+                    "type": "postgresql",
+                    "uri": "postgresql://postgres:3c2Fc4414dbb*BgaC*6GA-3E133EdGFE@viaduct.proxy.rlwy.net:58903/railway",
+                    "user_id": new_user.id,
+                    "database_name": "railway"
+                })
                 new_user = {
                     "id": new_user.id,
                     "email": new_user.email,

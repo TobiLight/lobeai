@@ -16,17 +16,29 @@ prompt_router = APIRouter(
 
 @prompt_router.post("/create-prompt", summary="Create a prompt")
 async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_auth)):
-    """"""
+    """
+    Creates a prompt based on the provided query and user profile.
+
+    Args:
+        query (QueryPrompt): The query prompt object containing information
+        for prompt creation.
+        user (UserProfile, optional): The user profile obtained through
+        custom authentication. Defaults to None if not provided.
+
+    Returns:
+        Natural language
+    """
     data = {}
     if not query:
         return {"status": "Error", "message": "Query cannot be empty!"}
     from src.db import db as prismadb
 
     # check if database already exists
-    print(prismadb.is_connected())
-    existing_db = await prismadb.databaseconnection.find_first(where={"id": query.database_id})
+    existing_db = await prismadb.databaseconnection.\
+        find_first(where={"id": query.database_id})
     if not existing_db:
-        return {"status": "Error", "message": "Database does not exist! Consider creating a new database!"}
+        return {"status": "Error", "message": "Database does not exist!\
+            Consider creating a new database!"}
 
     if existing_db.type in ["postgresql", "mysql"]:
         from sqlalchemy import create_engine, MetaData, text
@@ -50,7 +62,8 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
                 data[table_name] = column_names
 
             sql_command = generate_sql(
-                query.query, get_tables_keys, "The schema name is 'public'.", "PostgreSQL")
+                query.query, get_tables_keys, "The schema name is\
+                    'public'.", "PostgreSQL")
         else:
             get_tables_keys = get_tables.replace('"', "").split(", ")
             for table_name, table in metadata.tables.items():
@@ -63,7 +76,6 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
                 query.query, data, "", "MySQL")
 
         sql_query = text('{}'.format(sql_command))
-        # if sql_query in "As "
         try:
             sql_result = postgres_session.execute(sql_query).all()
         except:
@@ -78,18 +90,19 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
                 "conversation_id": query.conversation_id,
                 # "user_id": user.id
             })
-            conversation = await prismadb.conversation.update(where={"id": query.conversation_id}, data={"prompts": {"connect": [{"id": user_prompts.id}]}})
+            conversation = await prismadb.conversation.\
+                update(where={"id": query.conversation_id},
+                       data={"prompts": {"connect": [{"id": user_prompts.id}]}})
         except errors.PrismaError as e:
-            print(e)
-            pass
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))
 
         postgres_session.close()
         return {"status": "Ok", "data": response}
 
     from pymongo import MongoClient, errors as pyerrors
     try:
-        mongodb = MongoClient(
-        "mongodb+srv://0xTobi:ggHrioYrsyJaX7yZ@cluster0.ogakrxv.mongodb.net/")
+        mongodb = MongoClient(existing_db.uri)
     except (pyerrors.PyMongoError, ):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Database connection failed!")
@@ -106,8 +119,5 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
     except:
         return "An error has occured while executing command"
     mongo_nl_response = query_response_to_nl(query.query, mongo_response)
-    # tables = await client.query_raw('SELECT table_name FROM\
-    #     information_schema.tables WHERE table_schema = \'public\';')
-    # print(tables)
 
     return {"status": "Ok", "data": mongo_nl_response}

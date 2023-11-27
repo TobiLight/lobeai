@@ -27,8 +27,10 @@ def home():
                                   content="Welcome to AI powered E-commerce")
 
 
-@index_router.post("/create-db", summary="Create a Database connection from user")
-async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends(custom_auth)):
+@index_router.post("/create-db", summary="Create a Database connection\
+    from user")
+async def create_dbconn(db_conn: DatabaseConnection,
+                        user: UserProfile = Depends(custom_auth)):
     """"""
     from sqlalchemy import create_engine
 
@@ -41,7 +43,9 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
             "uri": existing_conn.uri
         }}
 
-    if db_conn.database_type != 'mongodb' and (not parsed_url.hostname or not parsed_url.path[1:] or parsed_url.path[1:] == ''):
+    if db_conn.database_type != 'mongodb' and (not parsed_url.hostname
+                                               or not parsed_url.path[1:] or
+                                               parsed_url.path[1:] == ''):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Invalid Database URI")
     print(parsed_url.hostname, parsed_url.path[1:])
@@ -50,12 +54,16 @@ async def create_dbconn(db_conn: DatabaseConnection, user: UserProfile = Depends
                             detail="Invalid Database URI")
     if db_conn.database_type == 'postgresql':
         engine = create_engine(
-            "postgresql+psycopg2://{}:{}@{}:{}/{}".format(parsed_url.username, parsed_url.password, parsed_url.hostname,
-                                                          parsed_url.port, parsed_url.path[1:]), echo=True)
+            "postgresql+psycopg2://{}:{}@{}:{}/{}".
+            format(parsed_url.username, parsed_url.password,
+                   parsed_url.hostname,
+                   parsed_url.port, parsed_url.path[1:]), echo=True)
     elif db_conn.database_type == 'mysql':
         engine = create_engine(
-            "mysql+mysqldb://{}:{}@{}:{}/{}".format(parsed_url.username, parsed_url.password, parsed_url.hostname,
-                                                    parsed_url.port, parsed_url.path[1:]), echo=True)
+            "mysql+mysqldb://{}:{}@{}:{}/{}".
+            format(parsed_url.username, parsed_url.password,
+                   parsed_url.hostname,
+                   parsed_url.port, parsed_url.path[1:]), echo=True)
     else:
         # handle mongodb connection here
         from pymongo.mongo_client import MongoClient
@@ -112,33 +120,3 @@ async def get_dbconn(user: UserProfile = Depends(custom_auth)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))
     return {"status": "Ok", "data": [*existing_conn]}
-
-
-@index_router.post('/query', summary="Query Database with NL")
-async def query_database(q: QueryDB, db: DatabaseConnection,
-                         user: UserProfile = Depends(custom_auth)):
-    from prisma import Prisma
-    # get connection string from user
-    db_conn = await Prisma(datasource={"url": "postgresql://postgres:admin123.@localhost:5433/alx_overflow"}).connect()
-    print(db_conn)
-    return {}
-    # create an instance with the provided string
-    # do whatever the fuck we want with the user's database... just kidding.. run queries on it
-    # tables = await client.query_raw('SELECT table_name FROM\
-    #     information_schema.tables WHERE table_schema = \'public\';')
-    # get_tables = get_applicable_tables(q.query, tables)
-    # get_tables_keys = await keys_in_tables(get_tables)
-    # sql_command = generate_sql(q.query, get_tables_keys)
-
-    # # Response from openai might have await in the command.
-    # if 'await' in sql_command:
-    #     sql_command = sql_command.replace("await", "").strip()
-
-    # if "." not in sql_command:
-    #     return responses.JSONResponse(content={"query": q.query,
-    #                                            "response": sql_command})
-
-    # sql_result = await eval("{}".format(sql_command))
-    # response = query_response_to_nl(q.query, sql_result)
-    # return responses.JSONResponse(content={"query": q.query,
-    #                                        "response": response})

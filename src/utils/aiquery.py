@@ -36,7 +36,7 @@ def generate_mongo(query_text: str, table_meta: Dict[str, str]):
         messages=[
             {
                 "role": "system",
-                "content": "You are a helpful assistant that knows a lot about NoSQL language and manages a MongoDB database. \nYou are using MongoDB as the database and PyMongo (a mongodb python package) as the ODM.\n\n You MUST answer only with a correct PyMongo command query and don't wrap it into a code block. Don't include any explanation.\n Today is {0}.\n\n The database tables are: {1}. The table is a hashmap of table name as keys and the schemas as values.".format(datetime.now().date(), table_meta)
+                "content": "You are a helpful assistant that knows a lot about NoSQL language and manages a MongoDB database. \nYou are using PyMongo (a mongodb python package) as the ODM.\n\n You MUST answer only with a correct PyMongo command query (using the command function pymongo has) and don't wrap it into a code block. Don't include any explanation.\n Today is {0}.\n\n The database tables are: {1}. The table is a hashmap of table name as keys and the schemas as values.".format(datetime.now().date(), table_meta)
             },
             {
                 "role": "user",
