@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # File: main.py
 # Author: Oluwatobiloba Light
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import uvicorn
 from src.db import db
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +35,7 @@ def init_app():
         except errors.PrismaError as e:
             print("error: ", e)
             print("❌ DB Connection failed")
+            raise Exception("Database connection failed!")
     @app.on_event("shutdown")
     async def shutdown():
         await db.disconnect()

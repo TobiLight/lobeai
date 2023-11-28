@@ -29,6 +29,20 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
     Returns:
         Natural language
     """
+    def add_quotes_around_table(query):
+        # Ensure query is a string
+        import re
+        if not isinstance(query, str):
+            raise ValueError("Input must be a string")
+
+        # Define a regular expression pattern to match schema.table
+        pattern = r'(\bpublic\b)\.(\w+)'
+
+        # Use re.sub to replace matches
+        modified_query = re.sub(
+            pattern, lambda match: f'{match.group(1)}."{match.group(2)}"', query)
+
+        return modified_query
     data = {}
     if not query:
         return {"status": "Error", "message": "Query cannot be empty!"}
@@ -67,7 +81,7 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
                 data[table_name] = column_names
             print(data)
             sql_command = generate_sql(
-                query.query, data, "The schema name is\
+                query.query, data, "The schema name for this database is\
                     'public'.", "PostgreSQL")
         else:
             get_tables_keys = get_tables.replace('"', "").split(", ")
@@ -82,11 +96,11 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
                 query.query, data, "", "MySQL")
 
         sql_query = text('{}'.format(sql_command))
-        # sql_result = postgres_session.execute(sql_query).all()
-        # print(sql_result)
+        modified_query = add_quotes_around_table(str(sql_query))
+        print(modified_query, sql_query)
+
         try:
-            sql_result = postgres_session.execute(sql_query).all()
-            print(sql_result)
+            sql_result = postgres_session.execute(text(modified_query)).all()
         except:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail={"status": "An error has occured while querying the database!"})

@@ -57,7 +57,7 @@ def generate_sql(query_text: str, table_meta: Dict[str, str], schema: str, db_ty
         messages=[
             {
                 "role": "system",
-                "content": "You are a helpful assistant that knows a lot about SQL language and manages a database. \nYou are using {3} as the database and SQLAlchemy as the ORM.\n\n You MUST answer only with a correct SQL query and don't wrap it into a code block. {2} Don't include any explanation.\n Today is {0}.\n\n The database tables are: {1}. The table is a hashmap of table name as keys and the schemas as values.".format(datetime.now().date(), table_meta, schema, db_type)
+                "content": "You are a helpful assistant that knows a lot about SQL language and manages a database. \nYou are using {3} as the database and SQLAlchemy (a python package) as the ORM.\n\n You MUST answer only with a correct SQL query and don't wrap it into a code block. {2} Don't include any explanation.\n Today is {0}.\n\n The database tables are: {1}. The table is a hashmap of table name as keys and the schemas as values.".format(datetime.now().date(), table_meta, schema, db_type)
             },
             {
                 "role": "user",
