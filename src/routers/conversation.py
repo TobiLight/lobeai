@@ -15,7 +15,7 @@ conversation_router = APIRouter(
 @conversation_router.get("/conversations", summary="Get all conversations")
 async def get_conversations(user: UserProfile = Depends(custom_auth)):
     """"""
-    conversations = await db.conversation.find_many(where={"user_id": user.id}, include={"prompts": True}, order=[{"created_at": "desc"}])
+    conversations = await db.conversation.find_many(where={"user_id": user.id}, include={"prompts": True}, order=[{"created_at": "asc"}])
     return {
         "status": "Ok",
         "data": conversations

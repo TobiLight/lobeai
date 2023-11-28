@@ -80,7 +80,8 @@ def create_access_token(payload: TokenPayload) -> str:
     to_encode = {"user_id": payload.user_id, "exp": expires,
                  #  "sub": str(payload.sub), "iss": payload.iss
                  }
-    encoded_jwt = jwt.encode(to_encode, getenv("JWT_SECRET_KEY"), getenv("ALGORITHM"))
+    encoded_jwt = jwt.encode(to_encode, getenv(
+        "JWT_SECRET_KEY"), getenv("ALGORITHM"))
     return encoded_jwt
 
 
@@ -97,7 +98,8 @@ def create_access_token(payload: TokenPayload) -> str:
 def decode_token(token: str) -> Union[str, None]:
     """"""
     try:
-        payload = jwt.decode(token, getenv("JWT_SECRET_KEY"), getenv("ALGORITHM"))
+        payload = jwt.decode(token, getenv(
+            "JWT_SECRET_KEY"), getenv("ALGORITHM"))
         token_data = TokenPayload(**payload)
 
         # if datetime.fromtimestamp(token_data.exp).timestamp() < datetime.now().timestamp():
@@ -159,7 +161,7 @@ async def decode_google_token(request: Request) -> UserProfile:
                     "conversation_id": default_conversation.id
                 })
                 update_conversation = await db.conversation.update(where={"id": default_conversation.id},
-                                                                   data={"prompts": {"connect": [{"id": default_prompt.id}]}})
+                                                                   data={"prompts": {"connect": [{"id": default_prompt.id}]}}, include={"promots": True})
                 # new_user = {
                 #     "id": new_user.id,
                 #     "email": new_user.email,
