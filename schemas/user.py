@@ -45,6 +45,10 @@ class UserLoginOuput(BaseModel):
     user: Union[UserProfile, None] = None
 
 
+class UserRequest(BaseModel):
+    email: str
+    name: str
+    profile_photo: Union[str, None] = None
 # class UserDetails(BaseModel):
 #     # id: str
 #     email: EmailStr

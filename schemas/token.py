@@ -2,7 +2,7 @@
 # File: user.py
 # Author: Oluwatobiloba Light
 
-from typing import Union
+from typing import Any, Dict, Union
 from pydantic import BaseModel
 
 
@@ -15,8 +15,7 @@ class TokenResponse(BaseModel):
     """
     Token Response class
     """
-    access_token: str
-    token_type: str
+    user: Dict[str, Any]
 
 
 class TokenRequest(BaseModel):
