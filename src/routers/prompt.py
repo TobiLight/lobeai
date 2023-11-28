@@ -9,6 +9,7 @@ from src.utils.aiquery import generate_mongo, generate_sql, get_applicable_table
 from src.utils.auth import custom_auth
 from uuid import uuid4
 from prisma import errors
+from datetime import datetime
 
 prompt_router = APIRouter(
     responses={404: {"description": "Not Found!"}}, tags=["User Prompts"])
@@ -98,7 +99,7 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
             })
             conversation = await prismadb.conversation.\
                 update(where={"id": query.conversation_id},
-                       data={"prompts": {"connect": [{"id": user_prompts.id}]}})
+                       data={"prompts": {"connect": [{"id": user_prompts.id}]}, "updated_at": datetime.now()})
         except errors.PrismaError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))
