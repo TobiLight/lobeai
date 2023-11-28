@@ -112,8 +112,8 @@ async def create_prompt(query: QueryPrompt,
         except:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"status": "An error has occured \
-                        while querying the database!"})
+                detail="An error has occured \
+                        while querying the database!")
         response = query_response_to_nl(query.query, sql_result)
 
         try:
@@ -153,7 +153,10 @@ async def create_prompt(query: QueryPrompt,
     try:
         mongo_response = eval("{}".format(mongo_command))
     except:
-        return "An error has occured while executing command"
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An error has occured \
+                        while querying the database!")
     mongo_nl_response = query_response_to_nl(query.query, mongo_response)
 
     return {"status": "Ok", "data": mongo_nl_response}
