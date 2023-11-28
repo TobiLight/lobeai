@@ -37,7 +37,6 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
     # check if database already exists
     existing_db = await prismadb.databaseconnection.\
         find_unique(where={"id": query.database_id})
-    print(existing_db)
     if not existing_db:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Database does not exist! Consider adding a new database!", headers={"Authorization": "Bearer"})
@@ -66,9 +65,9 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
                 # Store in the dictionary
                 data[table_name] = column_names
-
+            print(data)
             sql_command = generate_sql(
-                query.query, get_tables_keys, "The schema name is\
+                query.query, data, "The schema name is\
                     'public'.", "PostgreSQL")
         else:
             get_tables_keys = get_tables.replace('"', "").split(", ")
@@ -82,8 +81,11 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
                 query.query, data, "", "MySQL")
 
         sql_query = text('{}'.format(sql_command))
+        sql_result = postgres_session.execute(sql_query).all()
+        print(sql_result)
         try:
             sql_result = postgres_session.execute(sql_query).all()
+            print(sql_result)
         except:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail={"status": "An error has occured while querying the database!"})

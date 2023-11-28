@@ -30,10 +30,10 @@ def init_app():
     @app.on_event("startup")
     async def startup():
         try:
-            await db.connect(timeout=5000)
+            await db.connect()
             print("✅ Database Connected!")
         except errors.PrismaError as e:
-            print(e)
+            print("error: ", e)
             print("❌ DB Connection failed")
     @app.on_event("shutdown")
     async def shutdown():
