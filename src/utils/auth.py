@@ -181,7 +181,7 @@ async def decode_google_token(request: Request) -> UserProfile:
     return None
 
 
-async def custom_auth(token: Dict[str, Any] = Depends(decode_google_token)) -> Union[UserProfile, Dict[str, Any]]:
+async def custom_auth(token: Dict[str, Any] = Depends(decode_google_token)) -> UserProfile:
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials!", headers={"Authorization": "Bearer"})

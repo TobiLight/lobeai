@@ -39,7 +39,7 @@ async def create_dbconn(db_conn: DatabaseConnection,
     existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
     if existing_conn:
         return {"status": "Database connection exists already!", "data": {
-            "id": existing_conn.id,
+            "id": existing_conn["id"],
             "uri": existing_conn.uri
         }}
 
@@ -78,14 +78,14 @@ async def create_dbconn(db_conn: DatabaseConnection,
 
         new_db_conn = await db.databaseconnection.create({
             "id": str(uuid4()),
-            "user_id": user.id,
+            "user_id": user["id"],
             "uri": parsed_url.geturl(),
             "type": db_conn.database_type,
             "database_name": db_conn.database_name
         })
         client_mongo.close()
         return {"status": "OK", "data": {
-            "id": new_db_conn.id,
+            "id": new_db_conn["id"],
             "uri": new_db_conn.uri,
             "database_name": new_db_conn.database_name
         }}
@@ -95,7 +95,7 @@ async def create_dbconn(db_conn: DatabaseConnection,
         print("Database is connected.")
         new_db_conn = await db.databaseconnection.create({
             "id": str(uuid4()),
-            "user_id": user.id,
+            "user_id": user["id"],
             "uri": parsed_url.geturl(),
             "type": db_conn.database_type
         })
@@ -105,7 +105,7 @@ async def create_dbconn(db_conn: DatabaseConnection,
             status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))
 
     return {"status": "Ok", "data": {
-            "id": new_db_conn.id,
+            "id": new_db_conn["id"],
             "uri": new_db_conn.uri
             }}
 
@@ -114,7 +114,7 @@ async def create_dbconn(db_conn: DatabaseConnection,
 async def get_dbconn(user: UserProfile = Depends(custom_auth)):
     """"""
     try:
-        existing_conn = await db.databaseconnection.find_many(where={"user_id": user.id})
+        existing_conn = await db.databaseconnection.find_many(where={"user_id": user["id"]})
     except (errors.PrismaError) as e:
         print(e)
         raise HTTPException(
