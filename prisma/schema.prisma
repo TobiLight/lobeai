@@ -14,7 +14,7 @@ generator py {
 model User {
     id                   String               @id @unique
     name                 String?
-    email                String
+    email                String               @unique
     conversations        Conversation[]
     database_connections DatabaseConnection[]
     created_at           DateTime             @default(now())
