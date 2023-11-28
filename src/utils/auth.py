@@ -2,7 +2,7 @@
 # File: auth.py
 # Author: Oluwatobiloba Light
 
-from typing import Union
+from typing import Any, Dict, Union
 from fastapi import Depends, HTTPException, Request, status
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
@@ -121,6 +121,8 @@ def decode_token(token: str) -> Union[str, None]:
 
 async def decode_google_token(request: Request) -> UserProfile:
     token: str = ""
+    if not request.headers.get("Authorization"):
+        return None
     if len(request.headers.get("Authorization")) < 2:
         return None
     token = request.headers.get("Authorization")
@@ -131,10 +133,11 @@ async def decode_google_token(request: Request) -> UserProfile:
     except exceptions.GoogleAuthError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials!", headers={"Authorization": "Bearer"})
+    return id_info
 
     if id_info["iss"] == "https://accounts.google.com":
         try:
-            existing_user = await db.user.find_first(where={"email": id_info["email"]})
+            existing_user = await db.user.find_unique(where={"email": id_info["email"]})
             print("existing user", existing_user)
             if existing_user:
                 return existing_user
@@ -173,13 +176,28 @@ async def decode_google_token(request: Request) -> UserProfile:
             print(e)
             print("An error has occured!")
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                          detail="Something went wrong!", headers={"Authorization": "Bearer {}".format(token)})
+                                detail="Something went wrong!", headers={"Authorization": "Bearer {}".format(token)})
 
     return None
 
 
-async def custom_auth(user: UserProfile = Depends(decode_google_token)):
-    if not user:
+async def custom_auth(token: Dict[str, Any] = Depends(decode_google_token)) -> Union[UserProfile, Dict[str, Any]]:
+    if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials!", headers={"Authorization": "Bearer"})
-    return user
+    if token['iss'] == 'https://accounts.google.com':
+        existing_user = await db.user.find_unique(where={"email": token["email"]})
+
+        if existing_user:
+            user = {
+                'id': existing_user.id,
+                "email": existing_user.email,
+                "name": existing_user.name,
+                "created_at": existing_user.created_at,
+                "updated_at": existing_user.updated_at
+            }
+            return user
+        else:
+            return token
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Invalid credentials!", headers={"Authorization": "Bearer"})
