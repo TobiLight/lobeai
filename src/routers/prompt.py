@@ -81,8 +81,8 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
                 query.query, data, "", "MySQL")
 
         sql_query = text('{}'.format(sql_command))
-        sql_result = postgres_session.execute(sql_query).all()
-        print(sql_result)
+        # sql_result = postgres_session.execute(sql_query).all()
+        # print(sql_result)
         try:
             sql_result = postgres_session.execute(sql_query).all()
             print(sql_result)
