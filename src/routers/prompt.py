@@ -79,7 +79,6 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
                 # Store in the dictionary
                 data[table_name] = column_names
-            print(data)
             sql_command = generate_sql(
                 query.query, data, "The schema name for this database is\
                     'public'.", "PostgreSQL")
@@ -91,12 +90,12 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
                 # Store in the dictionary
                 data[table_name] = column_names
-            print(data)
             sql_command = generate_sql(
                 query.query, data, "", "MySQL")
 
         sql_query = text('{}'.format(sql_command))
         modified_query = add_quotes_around_table(str(sql_query))
+        print(data)
         print(modified_query, sql_query)
 
         try:
