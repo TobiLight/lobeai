@@ -5,6 +5,8 @@
 from typing import Dict, List
 from src.openai import client
 from datetime import datetime
+from openai import NotFoundError, APIStatusError, APITimeoutError, \
+    InternalServerError, AuthenticationError
 
 
 def get_applicable_tables_sql(query_text: str, table_meta: List[str]):
@@ -68,20 +70,25 @@ def generate_sql(query_text: str, table_meta: Dict[str, str], schema: str, db_ty
 
     return queries.choices[0].message.content
 
+
 def query_response_to_nl(query_text: str, query_answer: any):
     """"""
-    queries = client.chat.completions.create(
-        model="gpt-4",
-        messages=[
-            {
-                "role": "system",
-                "content": "You will be given a query and the result of executing the query on a database. In your response you should include a text explaining the result.\n\nTry to explain in a detailed manner such that a non tech savvy user would understand."
-            },
-            {
-                "role": "user",
-                "content": "-----------------------------------------\n Query: ${}\n-----------------------------------------\n\nResult: ${}".format(query_text, query_answer),
-            },
-        ]
-    )
+    try:
+        queries = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You will be given a query and the result of executing the query on a database. In your response you should include a text explaining the result.\n\nTry to explain in a detailed manner such that a non tech savvy user would understand."
+                },
+                {
+                    "role": "user",
+                    "content": "-----------------------------------------\n Query: ${}\n-----------------------------------------\n\nResult: ${}".format(query_text, query_answer),
+                },
+            ]
+        )
+    except (NotFoundError, APIStatusError, APITimeoutError,
+            InternalServerError, AuthenticationError) as e:
+        print(e)
 
     return queries.choices[0].message.content

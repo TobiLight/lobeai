@@ -6,7 +6,7 @@ from sqlite3 import OperationalError
 from fastapi import APIRouter, Depends, HTTPException, responses
 from fastapi import status, responses
 from schemas.user import UserProfile
-from schemas.query import DatabaseConnection, QueryDB
+from schemas.query import DatabaseConnection
 from src.utils.auth import custom_auth
 from urllib.parse import urlparse
 from google.auth.transport import requests
@@ -36,7 +36,8 @@ async def create_dbconn(db_conn: DatabaseConnection,
 
     parsed_url = urlparse(db_conn.uri)
 
-    existing_conn = await db.databaseconnection.find_first(where={"uri": db_conn.uri})
+    existing_conn = await db.databaseconnection.\
+        find_first(where={"uri": db_conn.uri})
     if existing_conn:
         return {"status": "Database connection exists already!", "data": {
             "id": existing_conn.id,
@@ -114,7 +115,8 @@ async def create_dbconn(db_conn: DatabaseConnection,
 async def get_dbconn(user: UserProfile = Depends(custom_auth)):
     """"""
     try:
-        existing_conn = await db.databaseconnection.find_many(where={"user_id": user["id"]})
+        existing_conn = await db.databaseconnection.\
+            find_many(where={"user_id": user["id"]})
     except (errors.PrismaError) as e:
         print(e)
         raise HTTPException(

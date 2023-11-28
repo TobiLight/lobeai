@@ -24,8 +24,10 @@ def init_app():
     app.add_middleware(CORSMiddleware,
                        allow_origins=origins,
                        allow_credentials=True,
-                       allow_methods=["GET", "POST", "PUT", "DELETE", "OPTION"],
-                       allow_headers=["Content-Type", "Authorization", "WWW-AUTHENTICATE"])
+                       allow_methods=["GET", "POST", "PUT", "DELETE",
+                                      "OPTION"],
+                       allow_headers=["Content-Type", "Authorization",
+                                      "WWW-AUTHENTICATE"])
 
     @app.on_event("startup")
     async def startup():
@@ -36,6 +38,7 @@ def init_app():
             print("error: ", e)
             print("❌ DB Connection failed")
             raise Exception("Database connection failed!")
+
     @app.on_event("shutdown")
     async def shutdown():
         await db.disconnect()

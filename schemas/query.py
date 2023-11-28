@@ -32,10 +32,6 @@ class DatabaseConnection(BaseModel):
     database_type: DatabaseType
     uri: Union[str, None]
     database_name: Union[str, None]
-    # username: Union[str, None] = Field(default=None)
-    # password: Union[str, None] = Field(default=None)
-    # host: Union[str, None] = Field(default=None)
-    # port: Union[str, None] = Field(default=None)
 
     @classmethod
     def as_form(cls, database_type: DatabaseType = Form(...), uri: str = Form(...)):

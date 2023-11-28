@@ -24,13 +24,6 @@ class UserLogin(BaseModel):
     email: EmailStr = Field(...)
     password: str = Field(...)
 
-
-# class UserProfile(BaseModel):
-#     first_name: Union[str, None] = None
-#     last_name: Union[str, None] = None
-#     email: EmailStr
-#     created_at: datetime.datetime
-
 class UserProfile(BaseModel):
     id: UUID = Field(...)
     email: EmailStr = Field(...)
@@ -49,10 +42,3 @@ class UserRequest(BaseModel):
     email: str
     name: str
     profile_photo: Union[str, None] = None
-# class UserDetails(BaseModel):
-#     # id: str
-#     email: EmailStr
-#     first_name: Union[str, None] = None
-#     last_name: Union[str, None] = None
-#     created_at: datetime.datetime
-#     updated_at: datetime.datetime

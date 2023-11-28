@@ -2,19 +2,15 @@
 # File: auth.py
 # Author: Oluwatobiloba Light
 
-from typing import Any, Dict, Union
+from typing import Union
 from fastapi import Depends, HTTPException, Request, status
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError, ExpiredSignatureError
-from schemas.token import TokenPayload, TokenResponse
-from schemas.user import UserProfile, UserRequest
+from schemas.token import TokenPayload
+from schemas.user import UserProfile
 from src.db import db
-from google.oauth2 import id_token
 from google.auth.transport import requests
-from google.auth import exceptions
-from uuid import uuid4
-from prisma import errors
 from os import getenv
 from jose import jwt
 
@@ -124,16 +120,20 @@ async def decode_jwt_token(request: Request) -> UserProfile:
             "JWT_SECRET_KEY"), getenv("ALGORITHM"))
     except (JWTError, ExpiredSignatureError) as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Invalid credentials!", headers={"Authorization": "Bearer"})
+                            detail="Invalid credentials!",
+                            headers={"Authorization": "Bearer"})
 
-    existing_user = await db.user.find_unique(where={"email": decoded_token['user']})
+    existing_user = await db.user.find_unique(where={"email":
+                                                     decoded_token['user']})
     return existing_user
 
 
-async def custom_auth(user: UserProfile = Depends(decode_jwt_token)) -> UserProfile:
+async def custom_auth(user: UserProfile =
+                      Depends(decode_jwt_token)) -> UserProfile:
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="No user found!", headers={"Authorization": "Bearer"})
+                            detail="No user found!",
+                            headers={"Authorization": "Bearer"})
     data = {
         "id": user.id,
         "email": user.email,

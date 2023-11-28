@@ -5,7 +5,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from schemas.query import QueryPrompt
 from schemas.user import UserProfile
-from src.utils.aiquery import generate_mongo, generate_sql, get_applicable_tables_sql, query_response_to_nl
+from src.utils.aiquery import generate_mongo, generate_sql, \
+    get_applicable_tables_sql, query_response_to_nl
 from src.utils.auth import custom_auth
 from uuid import uuid4
 from prisma import errors
@@ -16,7 +17,8 @@ prompt_router = APIRouter(
 
 
 @prompt_router.post("/create-prompt", summary="Create a prompt")
-async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_auth)):
+async def create_prompt(query: QueryPrompt,
+                        user: UserProfile = Depends(custom_auth)):
     """
     Creates a prompt based on the provided query and user profile.
 
@@ -40,9 +42,10 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
         # Use re.sub to replace matches
         modified_query = re.sub(
-            pattern, lambda match: f'{match.group(1)}."{match.group(2)}"', query)
-
+            pattern, lambda match: f'{match.group(1)}."{match.group(2)}"',
+            query)
         return modified_query
+
     data = {}
     if not query:
         return {"status": "Error", "message": "Query cannot be empty!"}
@@ -53,11 +56,17 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
         find_unique(where={"id": query.database_id})
     if not existing_db:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Database does not exist! Consider adding a new database!", headers={"Authorization": "Bearer"})
-    existing_convo = await prismadb.conversation.find_unique(where={"id": query.conversation_id})
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Database does not exist! \
+                    Consider adding a new database!",
+            headers={"Authorization": "Bearer"})
+    existing_convo = await prismadb.conversation.\
+        find_unique(where={"id": query.conversation_id})
     if not existing_convo:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Conversation does not exist!", headers={"Authorization": "Bearer"})
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Conversation does not exist!",
+            headers={"Authorization": "Bearer"})
 
     if existing_db.type in ["postgresql", "mysql"]:
         from sqlalchemy import create_engine, MetaData, text
@@ -102,7 +111,9 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
             sql_result = postgres_session.execute(text(modified_query)).all()
         except:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail={"status": "An error has occured while querying the database!"})
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"status": "An error has occured \
+                        while querying the database!"})
         response = query_response_to_nl(query.query, sql_result)
 
         try:
@@ -115,7 +126,9 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
             })
             conversation = await prismadb.conversation.\
                 update(where={"id": query.conversation_id},
-                       data={"prompts": {"connect": [{"id": user_prompts.id}]}, "updated_at": datetime.now()})
+                       data={"prompts": {"connect":
+                                         [{"id": user_prompts.id}]},
+                             "updated_at": datetime.now()})
         except errors.PrismaError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))

@@ -15,7 +15,11 @@ conversation_router = APIRouter(
 @conversation_router.get("/conversations", summary="Get all conversations")
 async def get_conversations(user: UserProfile = Depends(custom_auth)):
     """"""
-    conversations = await db.conversation.find_many(where={"user_id": user["id"]}, include={"prompts": {"order_by": {"updated_at": "asc"}}}, order=[{"updated_at": "asc"}])
+    conversations = await db.conversation.\
+        find_many(where={"user_id": user["id"]},
+                  include={"prompts": {"order_by":
+                                       {"updated_at": "asc"}}},
+                  order=[{"updated_at": "asc"}])
     return {
         "status": "Ok",
         "data": conversations
@@ -25,14 +29,17 @@ async def get_conversations(user: UserProfile = Depends(custom_auth)):
 @conversation_router.get("/conversation", summary="Get a conversation")
 async def get_conversation(id: str, user: UserProfile = Depends(custom_auth)):
     """"""
-    conversation = await db.conversation.find_first(where={"id": id, "user_id": user["id"]}, include={"prompts": True}, order=[{"updated_at": "desc"}])
+    conversation = await db.conversation.\
+        find_first(where={"id": id, "user_id": user["id"]},
+                   include={"prompts": True}, order=[{"updated_at": "desc"}])
     return {
         "status": "Ok",
         "data": conversation
     }
 
 
-@conversation_router.post("/create-conversation", summary="Create a conversation",)
+@conversation_router.post("/create-conversation",
+                          summary="Create a conversation",)
 async def create_conversation(user: UserProfile = Depends(custom_auth)):
     """"""
     new_conversation = await db.conversation.create({

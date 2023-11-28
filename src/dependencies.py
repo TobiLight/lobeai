@@ -18,7 +18,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserProfile:
         token (str): The OAuth2 access token used for user authentication.
 
     Returns:
-        User: An instance of the User model representing the authenticated user.
+        User: An instance of the User model representing the authenticated
+        user.
 
     Raises:
         HTTPException: If the provided token is invalid or if the user
