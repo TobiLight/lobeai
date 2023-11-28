@@ -108,7 +108,7 @@ async def login(request: Request):
                            data={"prompts": {"connect":
                                              [{"id": default_prompt.id}]}},
                            include={"prompts": True})
-                expiration_time = timedelta(hours=1)
+                expiration_time = timedelta(days=30)
                 expiration = datetime.utcnow() + expiration_time
                 access_token = jwt.encode(
                     {"user": new_user.email, "exp": expiration},
@@ -121,7 +121,7 @@ async def login(request: Request):
                     detail="An error has occured",
                     headers={'Authorization': 'Bearer'})
         else:
-            expiration_time = timedelta(hours=1)
+            expiration_time = timedelta(days=30)
             expiration = datetime.utcnow() + expiration_time
             access_token = jwt.encode(
                 {"user": existing_user.email, "exp": expiration},
