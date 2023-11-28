@@ -15,15 +15,13 @@ from google.auth.transport import requests
 from google.auth import exceptions
 from uuid import uuid4
 from prisma import errors
+from os import getenv
 
 
 google_request = requests.Request()
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 30 minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
-ALGORITHM = "HS256"
-JWT_SECRET_KEY = "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"    # should be kept secret
-# should be kept secret
 JWT_REFRESH_SECRET_KEY = "kjhgfghjk"
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -82,7 +80,7 @@ def create_access_token(payload: TokenPayload) -> str:
     to_encode = {"user_id": payload.user_id, "exp": expires,
                  #  "sub": str(payload.sub), "iss": payload.iss
                  }
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, getenv("JWT_SECRET_KEY"), getenv("ALGORITHM"))
     return encoded_jwt
 
 
@@ -99,7 +97,7 @@ def create_access_token(payload: TokenPayload) -> str:
 def decode_token(token: str) -> Union[str, None]:
     """"""
     try:
-        payload = jwt.decode(token, JWT_SECRET_KEY, ALGORITHM)
+        payload = jwt.decode(token, getenv("JWT_SECRET_KEY"), getenv("ALGORITHM"))
         token_data = TokenPayload(**payload)
 
         # if datetime.fromtimestamp(token_data.exp).timestamp() < datetime.now().timestamp():
@@ -125,14 +123,12 @@ async def decode_google_token(request: Request) -> UserProfile:
         return None
     token = request.headers.get("Authorization")
     token = token.split()[1] if len(token.split()) > 1 else ""
-    print("token: ", token)
     try:
         id_info = id_token.verify_oauth2_token(
             token, google_request)
     except exceptions.GoogleAuthError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials!", headers={"Authorization": "Bearer"})
-        return None
 
     if id_info["iss"] == "https://accounts.google.com":
         try:
@@ -148,7 +144,7 @@ async def decode_google_token(request: Request) -> UserProfile:
                 default_db = await db.databaseconnection.create({
                     "id": str(uuid4()),
                     "type": "postgresql",
-                    "uri": "postgresql://postgres:3c2Fc4414dbb*BgaC*6GA-3E133EdGFE@viaduct.proxy.rlwy.net:58903/railway",
+                    "uri": getenv("DEFAULT_DATABASE"),
                     "user_id": new_user.id,
                     "database_name": "railway"
                 })
