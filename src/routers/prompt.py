@@ -36,7 +36,8 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
     # check if database already exists
     existing_db = await prismadb.databaseconnection.\
-        find_first(where={"id": query.database_id})
+        find_unique(where={"id": query.database_id})
+    print(existing_db)
     if not existing_db:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Database does not exist! Consider adding a new database!", headers={"Authorization": "Bearer"})
