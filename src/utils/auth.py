@@ -162,7 +162,7 @@ async def decode_google_token(request: Request) -> UserProfile:
                     "conversation_id": default_conversation.id
                 })
                 update_conversation = await db.conversation.update(where={"id": default_conversation.id},
-                                                                   data={"prompts": {"connect": [{"id": default_prompt.id}]}}, include={"promots": True})
+                                                                   data={"prompts": {"connect": [{"id": default_prompt.id}]}}, include={"prompts": True})
                 # new_user = {
                 #     "id": new_user.id,
                 #     "email": new_user.email,
