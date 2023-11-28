@@ -77,6 +77,7 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
 
                 # Store in the dictionary
                 data[table_name] = column_names
+            print(data)
             sql_command = generate_sql(
                 query.query, data, "", "MySQL")
 
