@@ -142,7 +142,7 @@ async def create_prompt(query: QueryPrompt,
     except (pyerrors.PyMongoError, ):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Database connection failed!")
-    db = mongodb["sample_mflix"]
+    db = mongodb["{}".format(existing_db.database_name)]
     list_of_collections = db.list_collection_names()
     get_tables = get_applicable_tables_sql(query.query, list_of_collections)
     get_tables_keys = get_tables.replace('"', "").split(", ")
