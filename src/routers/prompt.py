@@ -158,5 +158,19 @@ async def create_prompt(query: QueryPrompt,
             detail="An error has occured \
                         while querying the database!")
     mongo_nl_response = query_response_to_nl(query.query, mongo_response)
+    try:
+        mongo_prompts = await prismadb.prompt.create({
+            "id": str(uuid4()),
+            "query": query.query,
+            "response": mongo_nl_response,
+            "conversation_id": query.conversation_id
+        })
+        await prismadb.conversation.update(where={"id": query.conversation_id},
+                                           data={"prompts": {"connect":
+                                                             [{"id": mongo_prompts.id}]},
+                                                 "updated_at": datetime.now()})
+    except errors.PrismaError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="{}".format(e))
 
     return {"status": "Ok", "data": mongo_nl_response}
