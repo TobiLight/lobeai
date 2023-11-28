@@ -19,7 +19,7 @@ async def get_conversations(user: UserProfile = Depends(custom_auth)):
         find_many(where={"user_id": user["id"]},
                   include={"prompts": {"order_by":
                                        {"created_at": "asc"}}},
-                  order=[{"updated_at": "asc"}])
+                  order=[{"updated_at": "desc"}])
     return {
         "status": "Ok",
         "data": conversations
