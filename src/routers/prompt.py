@@ -83,7 +83,9 @@ async def create_prompt(query: QueryPrompt, user: UserProfile = Depends(custom_a
         try:
             sql_result = postgres_session.execute(sql_query).all()
         except:
-            return "An error has occured!"
+            print(sql_result)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail={"status": "An error has occured while querying the database!"})
         response = query_response_to_nl(query.query, sql_result)
 
         try:
