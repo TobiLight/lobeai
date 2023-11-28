@@ -135,6 +135,7 @@ async def decode_google_token(request: Request) -> UserProfile:
     if id_info["iss"] == "https://accounts.google.com":
         try:
             existing_user = await db.user.find_first(where={"email": id_info["email"]})
+            print("existing user", existing_user)
             if existing_user:
                 return existing_user
             else:
