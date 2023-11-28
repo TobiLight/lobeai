@@ -112,8 +112,7 @@ async def create_prompt(query: QueryPrompt,
         except:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="An error has occured \
-                        while querying the database!")
+                detail="An error has occured while querying the database! Please try again :)")
         response = query_response_to_nl(query.query, sql_result)
 
         try:
@@ -155,8 +154,7 @@ async def create_prompt(query: QueryPrompt,
     except:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An error has occured \
-                        while querying the database!")
+            detail="An error has occured while querying the database! Please try again :)")
     mongo_nl_response = query_response_to_nl(query.query, mongo_response)
     try:
         mongo_prompts = await prismadb.prompt.create({
