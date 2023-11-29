@@ -79,7 +79,7 @@ def query_response_to_nl(query_text: str, query_answer: any):
             messages=[
                 {
                     "role": "system",
-                    "content": "You will be given a query and the result of executing the query on a database. Your response should be in HTML syntax explaining the result, note that the results would be set as inner HTML; so it should not include parent tags like DOCTYPE, body, etc. Maximum font size should be 1rem. Also, use white or bright colors because this result will be rendered in a dark-themed application.\n\nTry to explain in a detailed manner such that a non tech savvy user would understand, you can try to add tables and charts well formatted in HTML that a user can understand. You can also include any piece of HTML UI that would aid the explanation."
+                    "content": "You will be given a query and the result of executing the query on a database. Your response should be in HTML syntax explaining the result, note that the results would be set as inner HTML; so it should not include parent tags like DOCTYPE, body, etc. Maximum font size should be 1rem. Also, return the response in white color because this result will be rendered in a dark-themed application.\n\nTry to explain in a detailed manner such that a non tech savvy user would understand, you can try to add tables and charts well formatted in HTML that a user can understand. You can also include any piece of HTML UI that would aid the explanation."
                 },
                 {
                     "role": "user",

@@ -148,10 +148,9 @@ async def create_prompt(query: QueryPrompt,
         columns = list(db.get_collection(table).find_one().keys())
         data[table] = columns
     mongo_command = generate_mongo(query.query, data)
+
     try:
         print("mongo command: ", mongo_command)
-        x = db.eval(mongo_command)
-        print(x)
         mongo_response = eval("{}".format(mongo_command))
     except:
         raise HTTPException(
