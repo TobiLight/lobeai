@@ -57,8 +57,7 @@ async def create_prompt(query: QueryPrompt,
     if not existing_db:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Database does not exist! \
-                    Consider adding a new database!",
+            detail="Database does not exist! Consider adding a new database!",
             headers={"Authorization": "Bearer"})
     existing_convo = await prismadb.conversation.\
         find_unique(where={"id": query.conversation_id})
@@ -150,6 +149,7 @@ async def create_prompt(query: QueryPrompt,
         data[table] = columns
     mongo_command = generate_mongo(query.query, data)
     try:
+        print("mongo command: ", mongo_command)
         mongo_response = eval("{}".format(mongo_command))
     except:
         raise HTTPException(
