@@ -112,7 +112,7 @@ async def create_prompt(query: QueryPrompt,
         except:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="An error has occured while querying the database! Please try again :)")
+                detail="An error has occured while querying the database!Please try again :)")
         response = query_response_to_nl(query.query, sql_result)
 
         try:
